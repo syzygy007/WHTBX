@@ -249,6 +249,7 @@ function enter(owner){
   if(owner.role==='admin')tabs.push(['admin','Admin']);
   $('tabs').innerHTML=tabs.map(t=>'<button data-t="'+t[0]+'">'+t[1]+'</button>').join('');
   $('tabs').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.t;paint()}));
+  if(owner.role==='admin'){const d=document.createElement('button');d.textContent='Drop';d.addEventListener('click',()=>{location.href='drop.html'});$('tabs').appendChild(d);}
   document.title='WHTBX · Portal';
   load();
 }
