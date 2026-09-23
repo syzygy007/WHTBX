@@ -7,10 +7,10 @@
 <meta name="robots" content="noindex">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23101010'/%3E%3Crect x='14' y='14' width='36' height='36' fill='none' stroke='%23EDEAE4' stroke-width='3'/%3E%3Cpath d='M22 25h20M32 25v16' stroke='%23EDEAE4' stroke-width='3'/%3E%3C/svg%3E">
 <style>
-@font-face{font-family:'Space Grotesk';src:url('fonts/sg-300.woff2') format('woff2');font-weight:300;font-display:swap}
-@font-face{font-family:'Space Grotesk';src:url('fonts/sg-400.woff2') format('woff2');font-weight:400;font-display:swap}
-@font-face{font-family:'Space Grotesk';src:url('fonts/sg-500.woff2') format('woff2');font-weight:500;font-display:swap}
-@font-face{font-family:'Space Grotesk';src:url('fonts/sg-700.woff2') format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:'Space Grotesk';src:url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj62UXsrPMBTTA.woff2) format('woff2');font-weight:300;font-display:swap}
+@font-face{font-family:'Space Grotesk';src:url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7oUXsrPMBTTA.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Space Grotesk';src:url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7aUXsrPMBTTA.woff2) format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'Space Grotesk';src:url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVnsrPMBTTA.woff2) format('woff2');font-weight:700;font-display:swap}
 :root{
   --bg:#101010;--panel:#151412;--panel2:#1B1A17;
   --txt:#EDEAE4;--dim:#98938B;--dim2:#6E6A63;
@@ -207,14 +207,17 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const money=n=>n==null?'·':'$'+Math.round(Number(n)).toLocaleString('en-US');
 const moneyM=n=>{n=Number(n||0);return n>=1e6?'$'+(n/1e6).toFixed(1)+'M':money(n)};
-let challenge=null, emailNow='', ME=null, PF=null, ADMIN=null, tab='overview', subtab='properties';
+let emailNow='', ME=null, PF=null, ADMIN=null, tab='overview', subtab='properties';
 
-async function api(fn,body){
-  const r=await fetch('/.netlify/functions/'+fn,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(body||{})});
+const API='https://buyuqranpfaugchklqev.supabase.co/functions/v1/quick-endpoinportalt';
+let TOKEN=null; try{TOKEN=localStorage.getItem('whtbx_token')}catch(e){}
+function keep(t){TOKEN=t;try{if(t)localStorage.setItem('whtbx_token',t);else localStorage.removeItem('whtbx_token')}catch(e){}}
+async function api(action,body){
+  const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({action,token:TOKEN},body||{}))});
   let j={}; try{j=await r.json()}catch(e){}
   return {ok:r.ok&&j.ok!==false,status:r.status,...j};
 }
-const data=(action,payload)=>api('data',Object.assign({action},payload||{}));
+const data=(action,payload)=>api(action,payload);
 function err(el,msg){el.textContent=msg;el.classList.add('on')}
 function clr(el){el.textContent='';el.classList.remove('on')}
 
@@ -222,20 +225,20 @@ function clr(el){el.textContent='';el.classList.remove('on')}
 $('f1').addEventListener('submit',async ev=>{
   ev.preventDefault();clr($('e1'));$('b1').disabled=true;$('b1').textContent='Sending';
   emailNow=$('email').value.trim().toLowerCase();
-  const r=await api('auth-request',{email:emailNow});
+  const r=await api('auth.request',{email:emailNow});
   $('b1').disabled=false;$('b1').textContent='Send code';
-  if(r.ok){challenge={sig:r.sig,exp:r.exp};$('step1').style.display='none';$('step2').style.display='block';$('sentTo').textContent='Sent to '+emailNow+'. It expires in 10 minutes and works once.';$('code').focus()}
+  if(r.ok){$('step1').style.display='none';$('step2').style.display='block';$('sentTo').textContent='Sent to '+emailNow+'. It expires in 10 minutes and works once.';$('code').focus()}
   else err($('e1'),r.error||'Could not send the code. Try again.');
 });
 $('f2').addEventListener('submit',async ev=>{
   ev.preventDefault();clr($('e2'));$('b2').disabled=true;$('b2').textContent='Verifying';
-  const r=await api('auth-verify',{email:emailNow,code:$('code').value.trim(),sig:challenge&&challenge.sig,exp:challenge&&challenge.exp});
+  const r=await api('auth.verify',{email:emailNow,code:$('code').value.trim()});
   $('b2').disabled=false;$('b2').textContent='Verify';
-  if(r.ok){enter(r.owner)} else err($('e2'),r.error||'That code did not match.');
+  if(r.ok){keep(r.token);enter(r.owner)} else err($('e2'),r.error||'That code did not match.');
 });
-$('resend').addEventListener('click',async()=>{clr($('e2'));const r=await api('auth-request',{email:emailNow});if(r.ok){challenge={sig:r.sig,exp:r.exp};$('sentTo').textContent='A new code is on its way to '+emailNow+'.'}else err($('e2'),r.error||'Could not resend.')});
+$('resend').addEventListener('click',async()=>{clr($('e2'));const r=await api('auth.request',{email:emailNow});if(r.ok){$('sentTo').textContent='A new code is on its way to '+emailNow+'.'}else err($('e2'),r.error||'Could not resend.')});
 $('back').addEventListener('click',()=>{$('step2').style.display='none';$('step1').style.display='block';clr($('e2'))});
-$('signout').addEventListener('click',async()=>{await api('signout');location.reload()});
+$('signout').addEventListener('click',async()=>{await api('signout');keep(null);location.reload()});
 
 /* ---------------- portal shell ---------------- */
 function enter(owner){
@@ -407,7 +410,7 @@ function formSec(title,id,fields,action){
 }
 
 /* ---------------- boot ---------------- */
-(async()=>{const r=await api('me');if(r.ok&&r.owner)enter(r.owner)})();
+(async()=>{if(!TOKEN)return;const r=await api('me');if(r.ok&&r.owner)enter(r.owner);else keep(null)})();
 </script>
 </body>
 </html>
