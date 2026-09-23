@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WHTBX · Owner Portal</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23101010'/%3E%3Crect x='14' y='14' width='36' height='36' fill='none' stroke='%23EDEAE4' stroke-width='3'/%3E%3Cpath d='M22 25h20M32 25v16' stroke='%23EDEAE4' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+@font-face{font-family:'Space Grotesk';src:url('fonts/sg-300.woff2') format('woff2');font-weight:300;font-display:swap}
+@font-face{font-family:'Space Grotesk';src:url('fonts/sg-400.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Space Grotesk';src:url('fonts/sg-500.woff2') format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'Space Grotesk';src:url('fonts/sg-700.woff2') format('woff2');font-weight:700;font-display:swap}
+:root{
+  --bg:#101010;--panel:#151412;--panel2:#1B1A17;
+  --txt:#EDEAE4;--dim:#98938B;--dim2:#6E6A63;
+  --line:rgba(237,234,228,.13);
+  --gold:#E8B95A;--gold-deep:#8A6A2F;--gold-hi:#F0C46A;
+  --amber:#E8A13D;--blue:#7FA8D8;--green:#8FBF8A;--errc:#C97A6B;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Space Grotesk',Arial,sans-serif;background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased;font-weight:400;font-size:14px}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit}
+.micro{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.btn{display:inline-block;font-size:13px;padding:12px 26px;border:1px solid transparent;transition:.2s;cursor:pointer;background:var(--txt);color:var(--bg)}
+.btn:hover{background:#fff}
+.btn.gold{background:var(--gold);color:#141210}
+.btn.gold:hover{background:var(--gold-hi)}
+.btn.full{width:100%;padding:15px 26px;font-size:14px}
+.btn[disabled]{opacity:.45;cursor:default}
+.linkbtn{background:none;border:none;cursor:pointer;font-size:12px;color:var(--dim);padding:0;transition:.2s}
+.linkbtn:hover{color:var(--txt)}
+.chip{display:inline-block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:5px 10px;border:1px solid var(--line);color:var(--dim)}
+.chip.amber{border-color:rgba(232,161,61,.5);color:var(--amber)}
+.badge{display:inline-block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:4px 9px;border:1px solid var(--line);color:var(--dim)}
+.badge.ok{color:var(--txt)}
+.badge.warn{border-color:rgba(232,161,61,.55);color:var(--amber)}
+
+/* ---------- GATE ---------- */
+.gate{display:grid;grid-template-columns:1.15fr 1fr;min-height:100vh}
+.gate .visual{position:relative;overflow:hidden}
+.gate .visual img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.gate .visual .scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(16,16,16,.4),rgba(16,16,16,.08) 45%,rgba(16,16,16,.6))}
+.gate .visual .brand{position:absolute;top:34px;left:40px;color:var(--txt)}
+.gate .visual .cap{position:absolute;left:40px;bottom:36px}
+.gate .panel{display:flex;flex-direction:column;justify-content:center;padding:64px clamp(28px,6vw,96px);border-left:1px solid var(--line)}
+.gate h1{font-size:clamp(42px,4.6vw,66px);font-weight:400;letter-spacing:-.015em;margin:26px 0 12px}
+.gate .sub{font-weight:300;color:var(--dim);line-height:1.6;max-width:40ch;font-size:15px}
+.field{margin-top:34px}
+.field label{display:block;font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px;color:var(--dim)}
+.field input,.field select{width:100%;background:transparent;border:none;border-bottom:1px solid rgba(237,234,228,.3);padding:11px 2px;
+  font-family:inherit;font-size:17px;font-weight:300;color:var(--txt);outline:none;border-radius:0;transition:border-color .25s}
+.field input:focus,.field select:focus{border-bottom-color:var(--txt)}
+.field input::placeholder{color:var(--dim2)}
+.field select option{background:var(--panel);color:var(--txt)}
+#code{font-size:32px;letter-spacing:.5em;font-weight:400;text-align:center}
+.actions{margin-top:32px}
+.note{margin-top:20px;font-size:12px;font-weight:300;color:var(--dim2);line-height:1.6}
+.err{margin-top:16px;font-size:13px;color:var(--errc);display:none}
+.err.on{display:block}
+.gate .foot{margin-top:60px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim2)}
+@media(max-width:900px){
+  .gate{grid-template-columns:1fr}
+  .gate .visual{height:28vh;min-height:190px}
+  .gate .panel{padding:44px 24px 64px;border-left:none;border-top:1px solid var(--line)}
+}
+
+/* ---------- PORTAL ---------- */
+.portal{display:none;min-height:100vh}
+.pnav{position:sticky;top:0;z-index:20;background:rgba(16,16,16,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.pnav .in{max-width:1360px;margin:0 auto;padding:0 32px;display:flex;align-items:center;gap:34px;height:60px}
+.pnav .tabs{display:flex;gap:4px;flex:1}
+.pnav .tabs button{background:none;border:none;color:var(--dim);font-size:13px;padding:8px 14px;cursor:pointer;border-bottom:2px solid transparent;height:60px;transition:.2s}
+.pnav .tabs button:hover{color:var(--txt)}
+.pnav .tabs button.on{color:var(--gold-hi);border-bottom-color:var(--gold)}
+.pnav .right{display:flex;align-items:center;gap:18px}
+.pnav .who{font-size:11px;color:var(--dim2)}
+.pwrap{max-width:1360px;margin:0 auto;padding:40px 32px 110px}
+@media(max-width:900px){.pnav .in{padding:0 16px;gap:14px;overflow-x:auto}.pwrap{padding:28px 16px 90px}.pnav .who{display:none}}
+
+.phead{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+.phead h1{font-size:clamp(28px,3.4vw,44px);font-weight:400;letter-spacing:-.015em}
+
+/* stat tiles */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:36px}
+.tile{background:var(--panel);padding:20px 22px}
+.tile .l{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim2)}
+.tile .n{font-size:clamp(20px,2.2vw,30px);margin-top:8px;font-weight:400}
+.tile .n.gold{color:var(--gold-hi);text-shadow:0 0 18px rgba(240,196,106,.35)}
+@media(max-width:900px){.tiles{grid-template-columns:repeat(2,1fr)}}
+
+/* entity cards */
+.ecard{border:1px solid var(--line);background:var(--panel);margin-bottom:22px}
+.ecard .top{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:20px 24px 0;flex-wrap:wrap}
+.ecard .top .nm{font-size:20px}
+.ecard .top .addr{font-size:12px;color:var(--dim2)}
+.bar-wrap{padding:18px 24px 6px}
+.bar-row{display:flex;align-items:center;gap:16px}
+.track{flex:1;height:10px;background:#1D1C19;border:1px solid rgba(237,234,228,.07);position:relative;overflow:visible}
+.fill{position:absolute;left:0;top:-1px;bottom:-1px;background:linear-gradient(90deg,var(--gold-deep),var(--gold));
+  box-shadow:0 0 10px rgba(232,185,90,.6),0 0 26px rgba(232,185,90,.28);transition:width 1s ease}
+.pctlab{font-size:20px;color:var(--gold-hi);text-shadow:0 0 14px rgba(240,196,106,.75);min-width:64px;text-align:right}
+.pctlab small{font-size:11px;color:var(--dim);text-shadow:none;display:block;letter-spacing:.14em;text-transform:uppercase}
+.partners{padding:10px 24px 0;display:flex;gap:8px;flex-wrap:wrap}
+.figures{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border-top:1px solid var(--line);margin-top:16px}
+.figures>div{background:var(--panel);padding:14px 24px}
+.figures .l{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim2)}
+.figures .v{margin-top:5px;font-size:16px}
+.figures .v.gold{color:var(--gold-hi)}
+@media(max-width:900px){.figures{grid-template-columns:repeat(2,1fr)}}
+.rentline{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 24px;border-top:1px solid var(--line);font-size:13px;color:var(--dim);flex-wrap:wrap}
+
+/* generic sections/tables */
+.sec{border:1px solid var(--line);background:var(--panel);margin-bottom:22px}
+.sec .hd{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 22px;border-bottom:1px solid var(--line)}
+.sec .hd .t{font-size:16px}
+.rowline{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:13px 22px;border-bottom:1px solid var(--line);font-size:13px}
+.rowline:last-child{border-bottom:none}
+.rowline .main{color:var(--txt)}
+.rowline .sub{color:var(--dim2);font-size:12px}
+.rowline .right{display:flex;align-items:center;gap:14px;color:var(--dim)}
+.month-hd{display:flex;justify-content:space-between;padding:12px 22px;background:var(--panel2);border-bottom:1px solid var(--line);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+
+/* admin */
+.subtabs{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+.subtabs button{background:none;border:1px solid var(--line);color:var(--dim);font-size:12px;padding:9px 18px;cursor:pointer;transition:.2s}
+.subtabs button.on{border-color:var(--gold);color:var(--gold-hi)}
+.formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 26px;padding:20px 22px}
+.formgrid .field{margin-top:6px}
+.formgrid .field input,.formgrid .field select{font-size:15px;padding:9px 2px}
+.formgrid .span3{grid-column:1/-1}
+@media(max-width:900px){.formgrid{grid-template-columns:1fr}}
+.formfoot{display:flex;align-items:center;gap:18px;padding:6px 22px 22px}
+.okmsg{font-size:12px;color:var(--green);display:none}
+.okmsg.on{display:block}
+.demo-note{font-size:12px;color:var(--amber)}
+.loading{padding:60px;text-align:center;color:var(--dim2);font-size:13px;letter-spacing:.14em;text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<g id="wmg" fill="currentColor">
+<path transform="translate(30.06859 112) scale(0.08779150 -0.08779150)" d="M744 0 929 729H825L691 137L525 729H425L263 137L126 729H22L209 0H311L474 599L642 0Z"/>
+<path transform="translate(141.34019 112) scale(0.08779150 -0.08779150)" d="M551 332V0H644V729H551V414H176V729H83V0H176V332Z"/>
+<path fill-rule="evenodd" d="M234.877914951989 32h96v96h-96z M239.377914951989 36.5v87.0h87.0v-87.0z"/>
+<path transform="translate(255.92593 112) scale(0.08779150 -0.08779150)" d="M354 647H593V729H21V647H261V0H354Z"/>
+<path transform="translate(360.94239 112) scale(0.08779150 -0.08779150)" d="M79 0H408C477 0 528 19 567 61C603 99 623 151 623 208C623 296 583 349 490 385C557 416 591 469 591 544C591 598 571 644 533 678C494 713 445 729 375 729H79ZM172 415V647H352C404 647 433 640 458 621C484 601 498 571 498 531C498 491 484 461 458 441C433 422 404 415 352 415ZM172 82V333H399C481 333 530 286 530 207C530 129 481 82 399 82Z"/>
+<path transform="translate(450.70507999999995 112) scale(0.08779150 -0.08779150)" d="M391 374 637 729H526L338 443L151 729H38L280 374L22 0H135L335 304L534 0H649Z"/>
+</g>
+</defs>
+</svg>
+
+<!-- ================= GATE ================= -->
+<div class="gate" id="gate">
+  <div class="visual">
+    <img src="img/lobby-olive.jpg" alt="">
+    <div class="scrim"></div>
+    <a class="brand" href="index.html"><svg viewBox="0 0 539.682 160" style="height:20px;width:auto;display:block"><use href="#wmg"/></svg></a>
+    <div class="cap micro">Owner Portal · Private</div>
+  </div>
+  <div class="panel">
+    <div class="micro">Credentialed Access</div>
+    <div id="step1">
+      <h1>Sign in.</h1>
+      <p class="sub">Enter your email. We will send a six digit code that signs you in on this device for 30 days.</p>
+      <form id="f1">
+        <div class="field"><label for="email">Email</label>
+          <input id="email" type="email" autocomplete="email" placeholder="you@company.com" required></div>
+        <div class="actions"><button class="btn full" id="b1" type="submit">Send code</button></div>
+      </form>
+      <div class="err" id="e1"></div>
+    </div>
+    <div id="step2" style="display:none">
+      <h1>Enter code.</h1>
+      <p class="sub" id="sentTo">Sent to your email. It expires in 10 minutes and works once.</p>
+      <form id="f2">
+        <div class="field"><label for="code">Six digit code</label>
+          <input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="······" required></div>
+        <div class="actions"><button class="btn full gold" id="b2" type="submit">Verify</button></div>
+      </form>
+      <div class="err" id="e2"></div>
+      <p class="note"><button class="linkbtn" id="resend" type="button">Resend code</button> &nbsp;·&nbsp; <button class="linkbtn" id="back" type="button">Different email</button></p>
+    </div>
+    <div class="foot">WHTBXCO · Owners Only</div>
+  </div>
+</div>
+
+<!-- ================= PORTAL ================= -->
+<div class="portal" id="portal">
+  <div class="pnav"><div class="in">
+    <a href="index.html"><svg viewBox="0 0 539.682 160" style="height:15px;width:auto;display:block;color:var(--txt)"><use href="#wmg"/></svg></a>
+    <div class="tabs" id="tabs"></div>
+    <div class="right">
+      <span class="chip amber" id="demochip" style="display:none">Sample data</span>
+      <span class="who" id="who"></span>
+      <button class="linkbtn" id="signout" type="button">Sign out</button>
+    </div>
+  </div></div>
+  <div class="pwrap" id="view"><div class="loading">Loading</div></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money=n=>n==null?'·':'$'+Math.round(Number(n)).toLocaleString('en-US');
+const moneyM=n=>{n=Number(n||0);return n>=1e6?'$'+(n/1e6).toFixed(1)+'M':money(n)};
+let challenge=null, emailNow='', ME=null, PF=null, ADMIN=null, tab='overview', subtab='properties';
+
+async function api(fn,body){
+  const r=await fetch('/.netlify/functions/'+fn,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(body||{})});
+  let j={}; try{j=await r.json()}catch(e){}
+  return {ok:r.ok&&j.ok!==false,status:r.status,...j};
+}
+const data=(action,payload)=>api('data',Object.assign({action},payload||{}));
+function err(el,msg){el.textContent=msg;el.classList.add('on')}
+function clr(el){el.textContent='';el.classList.remove('on')}
+
+/* ---------------- auth ---------------- */
+$('f1').addEventListener('submit',async ev=>{
+  ev.preventDefault();clr($('e1'));$('b1').disabled=true;$('b1').textContent='Sending';
+  emailNow=$('email').value.trim().toLowerCase();
+  const r=await api('auth-request',{email:emailNow});
+  $('b1').disabled=false;$('b1').textContent='Send code';
+  if(r.ok){challenge={sig:r.sig,exp:r.exp};$('step1').style.display='none';$('step2').style.display='block';$('sentTo').textContent='Sent to '+emailNow+'. It expires in 10 minutes and works once.';$('code').focus()}
+  else err($('e1'),r.error||'Could not send the code. Try again.');
+});
+$('f2').addEventListener('submit',async ev=>{
+  ev.preventDefault();clr($('e2'));$('b2').disabled=true;$('b2').textContent='Verifying';
+  const r=await api('auth-verify',{email:emailNow,code:$('code').value.trim(),sig:challenge&&challenge.sig,exp:challenge&&challenge.exp});
+  $('b2').disabled=false;$('b2').textContent='Verify';
+  if(r.ok){enter(r.owner)} else err($('e2'),r.error||'That code did not match.');
+});
+$('resend').addEventListener('click',async()=>{clr($('e2'));const r=await api('auth-request',{email:emailNow});if(r.ok){challenge={sig:r.sig,exp:r.exp};$('sentTo').textContent='A new code is on its way to '+emailNow+'.'}else err($('e2'),r.error||'Could not resend.')});
+$('back').addEventListener('click',()=>{$('step2').style.display='none';$('step1').style.display='block';clr($('e2'))});
+$('signout').addEventListener('click',async()=>{await api('signout');location.reload()});
+
+/* ---------------- portal shell ---------------- */
+function enter(owner){
+  ME=owner;
+  $('gate').style.display='none';$('portal').style.display='block';
+  $('who').textContent=owner.email||'';
+  const tabs=[['overview','Overview'],['statements','Statements'],['documents','Documents'],['activity','Activity']];
+  if(owner.role==='admin')tabs.push(['admin','Admin']);
+  $('tabs').innerHTML=tabs.map(t=>'<button data-t="'+t[0]+'">'+t[1]+'</button>').join('');
+  $('tabs').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.t;paint()}));
+  document.title='WHTBX · Portal';
+  load();
+}
+async function load(){
+  const r=await data('portfolio');
+  if(!r.ok){$('view').innerHTML='<div class="loading">'+esc(r.error||'Could not load')+'</div>';return}
+  PF=r;
+  $('demochip').style.display=r.demo?'':'none';
+  paint();
+}
+function paint(){
+  $('tabs').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
+  if(tab==='overview')return viewOverview();
+  if(tab==='statements')return viewStatements();
+  if(tab==='documents')return viewDocuments();
+  if(tab==='activity')return viewActivity();
+  if(tab==='admin')return viewAdmin();
+}
+const greet=()=>{const h=new Date().getHours();return h<12?'Good morning':h<17?'Good afternoon':'Good evening'};
+
+/* ---------------- overview ---------------- */
+function viewOverview(){
+  const t=PF.totals;
+  $('view').innerHTML=
+  '<div class="phead"><h1>'+greet()+', '+esc((ME.name||'').split(' ')[0])+'.</h1><span class="micro">'+PF.entities.length+' entities</span></div>'+
+  '<div class="tiles">'+
+    '<div class="tile"><div class="l">Portfolio value</div><div class="n">'+moneyM(t.value)+'</div></div>'+
+    '<div class="tile"><div class="l">Debt</div><div class="n">'+moneyM(t.debt)+'</div></div>'+
+    '<div class="tile"><div class="l">Equity</div><div class="n">'+moneyM(t.equity)+'</div></div>'+
+    '<div class="tile"><div class="l">Your equity</div><div class="n gold">'+moneyM(t.myEquity)+'</div></div>'+
+  '</div>'+
+  PF.entities.map(e=>{
+    const r=e.rent||{};
+    return '<div class="ecard">'+
+    '<div class="top"><div class="nm">'+esc(e.name)+'</div><div class="addr">'+esc(e.property.name||'')+' · '+esc(e.property.address||'')+'</div></div>'+
+    '<div class="bar-wrap"><div class="bar-row">'+
+      '<div class="track"><div class="fill" style="width:'+e.pct+'%"></div></div>'+
+      '<div class="pctlab">'+e.pct+'%<small>your share</small></div>'+
+    '</div></div>'+
+    '<div class="partners">'+(e.partners||[]).map(p=>'<span class="chip">'+esc(p.name)+' · '+p.pct+'%</span>').join('')+'</div>'+
+    '<div class="figures">'+
+      '<div><div class="l">Value</div><div class="v">'+money(e.value)+'</div></div>'+
+      '<div><div class="l">Debt</div><div class="v">'+money(e.debt)+'</div></div>'+
+      '<div><div class="l">Equity</div><div class="v">'+money(e.equity)+'</div></div>'+
+      '<div><div class="l">Your piece</div><div class="v gold">'+money(e.myEquity)+'</div></div>'+
+    '</div>'+
+    (e.lease?'<div class="rentline"><span>'+esc(e.lease.tenant||'Lease')+' · rent per agreement '+money(r.expected)+'/mo'+(r.actual!=null?' · billing '+money(r.actual)+'/mo':'')+'</span>'+rentBadge(r)+'</div>':'')+
+    '</div>';
+  }).join('');
+}
+function rentBadge(r){
+  if(!r||r.actual==null)return '<span class="badge">No actual set</span>';
+  return r.ok?'<span class="badge ok">Matches agreement</span>':'<span class="badge warn">Check · off by '+money(Math.abs(r.actual-r.expected))+'</span>';
+}
+
+/* ---------------- statements / documents / activity ---------------- */
+function fileClick(){if(PF.demo)alert('Files come online once the database and storage are connected.')}
+function viewStatements(){
+  $('view').innerHTML='<div class="phead"><h1>Statements.</h1></div>'+
+  PF.entities.map(e=>'<div class="sec"><div class="hd"><span class="t">'+esc(e.name)+'</span><span class="micro">'+(e.statements||[]).length+' on file</span></div>'+
+    ((e.statements||[]).map(s=>'<div class="rowline"><span class="main">'+esc(s.period)+'</span><span class="right"><span class="sub">'+esc(s.name)+'</span><button class="linkbtn" onclick="fileClick()">View</button></span></div>').join('')||'<div class="rowline"><span class="sub">None posted yet</span></div>')+
+  '</div>').join('');
+}
+function viewDocuments(){
+  $('view').innerHTML='<div class="phead"><h1>Documents.</h1></div>'+
+  PF.entities.map(e=>'<div class="sec"><div class="hd"><span class="t">'+esc(e.name)+'</span><span class="micro">'+esc(e.property.name||'')+'</span></div>'+
+    ((e.documents||[]).map(d=>'<div class="rowline"><span class="main">'+esc(d.kind)+'</span><span class="right"><span class="sub">'+esc(d.name)+'</span><button class="linkbtn" onclick="fileClick()">View</button></span></div>').join('')||'<div class="rowline"><span class="sub">None uploaded yet</span></div>')+
+  '</div>').join('');
+}
+function monthKey(d){return String(d||'').slice(0,7)}
+function monthName(k){const [y,m]=k.split('-');const N=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return (N[Number(m)-1]||'')+' '+y}
+function viewActivity(){
+  $('view').innerHTML='<div class="phead"><h1>Activity.</h1><span class="micro">Work on the properties · monthly summary</span></div>'+
+  PF.entities.map(e=>{
+    const byM={};(e.work||[]).forEach(w=>{(byM[monthKey(w.work_date)]=byM[monthKey(w.work_date)]||[]).push(w)});
+    const months=Object.keys(byM).sort().reverse();
+    return '<div class="sec"><div class="hd"><span class="t">'+esc(e.name)+'</span><span class="micro">'+esc(e.property.name||'')+'</span></div>'+
+      (months.map(k=>{
+        const tot=byM[k].reduce((s,w)=>s+Number(w.cost||0),0);
+        return '<div class="month-hd"><span>'+monthName(k)+'</span><span>'+byM[k].length+' items · '+money(tot)+'</span></div>'+
+        byM[k].map(w=>'<div class="rowline"><span><span class="main">'+esc(w.description)+'</span> <span class="sub">· '+esc(w.vendor||'')+' · '+esc(w.work_date)+'</span></span><span class="right">'+money(w.cost)+'</span></div>').join('');
+      }).join('')||'<div class="rowline"><span class="sub">No work logged</span></div>')+
+    '</div>';
+  }).join('');
+}
+
+/* ---------------- admin ---------------- */
+async function viewAdmin(){
+  if(!ADMIN){$('view').innerHTML='<div class="loading">Loading</div>';const r=await data('admin.overview');if(!r.ok){$('view').innerHTML='<div class="loading">'+esc(r.error||'')+'</div>';return}ADMIN=r}
+  const subs=[['properties','Properties'],['lease','Lease & Rent'],['work','Work Log'],['owners','Owners']];
+  $('view').innerHTML='<div class="phead"><h1>Admin.</h1>'+(ADMIN.demo?'<span class="demo-note">Sample data · connect the database to save changes</span>':'')+'</div>'+
+  '<div class="subtabs">'+subs.map(s=>'<button data-s="'+s[0]+'" class="'+(subtab===s[0]?'on':'')+'">'+s[1]+'</button>').join('')+'</div>'+
+  '<div id="adminbody"></div>';
+  document.querySelectorAll('.subtabs button').forEach(b=>b.addEventListener('click',()=>{subtab=b.dataset.s;viewAdmin()}));
+  const B=$('adminbody');
+  const props=ADMIN.entities.map(e=>({id:e.property.id||e.id,label:e.name+' · '+(e.property.name||'')}));
+  const propOpts=props.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.label)+'</option>').join('');
+
+  if(subtab==='properties'){
+    B.innerHTML='<div class="sec"><div class="hd"><span class="t">Portfolio</span><span class="micro">'+ADMIN.entities.length+' entities</span></div>'+
+      ADMIN.entities.map(e=>'<div class="rowline"><span><span class="main">'+esc(e.name)+'</span> <span class="sub">· '+esc(e.property.name||'')+' · '+esc(e.property.address||'')+'</span></span>'+
+      '<span class="right"><span class="sub">Value '+money(e.value)+'</span><span class="sub">Debt '+money(e.debt)+'</span>'+rentBadge(e.rent)+'</span></div>').join('')+
+    '</div>'+
+    formSec('Add a property','fprop',[
+      ['entity_name','Entity (LLC) name','text'],['name','Property name','text'],['address','Address','text'],
+      ['purchase_price','Purchase price $','number'],['purchase_date','Purchase date','date'],['current_value','Current value $','number'],
+      ['mortgage_amount','Mortgage amount $','number'],['lender','Lender','text']
+    ],'admin.add_property');
+  }
+  if(subtab==='lease'){
+    B.innerHTML='<div class="sec"><div class="hd"><span class="t">Rent vs agreement</span><span class="micro">expected = base rent escalated on each lease anniversary</span></div>'+
+      ADMIN.entities.map(e=>{const r=e.rent;return '<div class="rowline"><span><span class="main">'+esc(e.name)+'</span> <span class="sub">· '+esc(e.lease?e.lease.tenant||'':'no lease')+(e.lease?' · base '+money(e.lease.base_rent)+' · '+(e.lease.escalator_pct||0)+'%/yr':'')+'</span></span>'+
+        '<span class="right">'+(r?'<span class="sub">expected '+money(r.expected)+'</span><span class="sub">billing '+(r.actual==null?'·':money(r.actual))+'</span>':'')+rentBadge(r)+'</span></div>'}).join('')+
+    '</div>'+
+    formSec('Set the lease on a property','flease',[
+      ['property_id','Property','select',propOpts],['tenant','Tenant','text'],['start_date','Lease start','date'],
+      ['base_rent','Base rent $/mo','number'],['escalator_pct','Escalator %/yr','number'],['actual_rent','Actual rent billed $/mo','number']
+    ],'admin.add_lease');
+  }
+  if(subtab==='work'){
+    B.innerHTML=formSec('Log work on a property','fwork',[
+      ['property_id','Property','select',propOpts],['work_date','Date','date'],['vendor','Vendor','text'],
+      ['cost','Cost $','number'],['description','What was done','text','',true]
+    ],'admin.add_work')+
+    '<div class="sec"><div class="hd"><span class="t">Recent work</span></div>'+
+      ADMIN.entities.flatMap(e=>(e.work||[]).slice(0,3).map(w=>'<div class="rowline"><span><span class="main">'+esc(w.description)+'</span> <span class="sub">· '+esc(e.name)+' · '+esc(w.work_date)+'</span></span><span class="right">'+money(w.cost)+'</span></div>')).join('')+
+    '</div>';
+  }
+  if(subtab==='owners'){
+    const entOpts=ADMIN.entities.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.name)+'</option>').join('');
+    B.innerHTML='<div class="sec"><div class="hd"><span class="t">Owners</span></div>'+
+      ADMIN.owners.map(o=>'<div class="rowline"><span><span class="main">'+esc(o.name)+'</span> <span class="sub">· '+esc(o.email)+'</span></span><span class="right"><span class="badge'+(o.role==='admin'?' ok':'')+'">'+esc(o.role)+'</span></span></div>').join('')+
+    '</div>'+
+    formSec('Add an owner','fowner',[['name','Name','text'],['email','Email','email'],['phone','Phone (for text message step, later)','text']],'admin.add_owner')+
+    formSec('Set ownership on an entity','fpct',[['entity_id','Entity','select',entOpts],['owner_email','Owner email','email'],['pct','Ownership %','number']],'admin.set_ownership');
+  }
+  document.querySelectorAll('form[data-action]').forEach(f=>f.addEventListener('submit',async ev=>{
+    ev.preventDefault();
+    const payload={};new FormData(f).forEach((v,k)=>{if(v!=='')payload[k]=v});
+    const btn=f.querySelector('.btn');btn.disabled=true;
+    const r=await data(f.dataset.action,payload);
+    btn.disabled=false;
+    const ok=f.querySelector('.okmsg'),er=f.querySelector('.err');clr(er);ok.classList.remove('on');
+    if(r.ok){ok.textContent='Saved.';ok.classList.add('on');f.reset();ADMIN=null;const p=await data('portfolio');if(p.ok)PF=p;viewAdmin()}
+    else err(er,r.error||'Could not save.');
+  }));
+}
+function formSec(title,id,fields,action){
+  return '<div class="sec"><div class="hd"><span class="t">'+title+'</span></div>'+
+  '<form id="'+id+'" data-action="'+action+'"><div class="formgrid">'+
+  fields.map(f=>{
+    const [name,label,type,opts,span]=f;
+    const inner=type==='select'
+      ?'<select name="'+name+'" required>'+opts+'</select>'
+      :'<input name="'+name+'" type="'+type+'"'+(type==='number'?' step="any"':'')+'>';
+    return '<div class="field'+(span?' span3':'')+'"><label>'+label+'</label>'+inner+'</div>';
+  }).join('')+
+  '</div><div class="formfoot"><button class="btn gold" type="submit">Save</button><span class="okmsg"></span><span class="err" style="margin-top:0"></span></div></form></div>';
+}
+
+/* ---------------- boot ---------------- */
+(async()=>{const r=await api('me');if(r.ok&&r.owner)enter(r.owner)})();
+</script>
+</body>
+</html>
