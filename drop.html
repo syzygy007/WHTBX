@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WHTBX · Drop</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23101010'/%3E%3Crect x='14' y='14' width='36' height='36' fill='none' stroke='%23EDEAE4' stroke-width='3'/%3E%3Cpath d='M22 25h20M32 25v16' stroke='%23EDEAE4' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+@font-face{font-family:'Space Grotesk';src:url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj62UXsrPMBTTA.woff2) format('woff2');font-weight:300;font-display:swap}
+@font-face{font-family:'Space Grotesk';src:url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7oUXsrPMBTTA.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Space Grotesk';src:url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7aUXsrPMBTTA.woff2) format('woff2');font-weight:500;font-display:swap}
+:root{
+  --bg:#101010;--panel:#151412;--panel2:#1B1A17;
+  --txt:#EDEAE4;--dim:#98938B;--dim2:#6E6A63;
+  --line:rgba(237,234,228,.13);
+  --gold:#E8B95A;--gold-deep:#8A6A2F;--gold-hi:#F0C46A;
+  --amber:#E8A13D;--green:#8FBF8A;--errc:#C97A6B;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Space Grotesk',Arial,sans-serif;background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased;font-size:14px}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit}
+.micro{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.wrap{max-width:980px;margin:0 auto;padding:0 28px 120px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:26px 0;border-bottom:1px solid var(--line);margin-bottom:56px}
+.top a svg{height:16px;width:auto;display:block;color:var(--txt)}
+.top .right{display:flex;gap:22px;align-items:center;font-size:12px;color:var(--dim)}
+.top .right a:hover{color:var(--txt)}
+h1{font-size:clamp(44px,7vw,84px);font-weight:400;letter-spacing:-.015em;line-height:1.04;margin:14px 0 12px}
+h1 .ghost{color:var(--dim)}
+.sub{font-weight:300;color:var(--dim);line-height:1.6;max-width:56ch;font-size:15px}
+.zone{margin-top:44px;border:1px dashed rgba(237,234,228,.28);background:var(--panel);padding:56px 30px;text-align:center;cursor:pointer;transition:.2s}
+.zone:hover,.zone.over{border-color:var(--gold);background:var(--panel2)}
+.zone .big{font-size:19px}
+.zone .hint{margin-top:10px;font-size:12px;color:var(--dim2)}
+.filecard{display:none;margin-top:14px;padding:14px 18px;border:1px solid var(--line);background:var(--panel);font-size:13px;justify-content:space-between;align-items:center;gap:14px}
+.filecard.on{display:flex}
+.filecard .nm{color:var(--txt)}
+.filecard .meta{color:var(--dim2);font-size:12px}
+.say{margin-top:26px}
+.say label{display:block;font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px;color:var(--dim)}
+.say textarea{width:100%;min-height:74px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-family:inherit;font-size:15px;font-weight:300;padding:14px 16px;outline:none;resize:vertical;border-radius:0}
+.say textarea:focus{border-color:rgba(237,234,228,.4)}
+.say textarea::placeholder{color:var(--dim2)}
+.actions{margin-top:22px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.btn{display:inline-block;font-size:13px;padding:13px 30px;border:1px solid transparent;transition:.2s;cursor:pointer;background:var(--txt);color:var(--bg)}
+.btn:hover{background:#fff}
+.btn.gold{background:var(--gold);color:#141210}
+.btn.gold:hover{background:var(--gold-hi)}
+.btn[disabled]{opacity:.45;cursor:default}
+.linkbtn{background:none;border:none;cursor:pointer;font-size:12px;color:var(--dim);padding:0;transition:.2s}
+.linkbtn:hover{color:var(--txt)}
+.status{font-size:12px;color:var(--dim2)}
+.err{margin-top:16px;font-size:13px;color:var(--errc);display:none}
+.err.on{display:block}
+/* preview */
+.preview{display:none;margin-top:56px}
+.preview.on{display:block}
+.preview .hd{display:flex;justify-content:space-between;align-items:baseline;gap:14px;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:20px;flex-wrap:wrap}
+.preview .hd .t{font-size:24px}
+.sumline{font-size:14px;color:var(--dim);font-weight:300;margin-bottom:22px}
+.pcard{border:1px solid var(--line);background:var(--panel);margin-bottom:16px}
+.pcard .nm{display:flex;justify-content:space-between;gap:12px;padding:15px 20px;border-bottom:1px solid var(--line);font-size:16px;flex-wrap:wrap}
+.pcard .tag{font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:4px 9px;border:1px solid var(--line);color:var(--dim)}
+.pcard .tag.new{border-color:rgba(232,185,90,.5);color:var(--gold-hi)}
+.rows{padding:6px 0}
+.row{display:flex;justify-content:space-between;gap:16px;padding:9px 20px;font-size:13px}
+.row .k{color:var(--dim2)}
+.row .v{color:var(--txt);text-align:right}
+.gold-v{color:var(--gold-hi)}
+.applied{display:none;margin-top:30px;border:1px solid rgba(143,191,138,.35);background:var(--panel);padding:20px 22px}
+.applied.on{display:block}
+.applied .t{color:var(--green);font-size:14px;margin-bottom:10px}
+.applied li{font-size:13px;color:var(--dim);margin:5px 0 5px 18px}
+.gatebar{display:none;margin-top:44px;border:1px solid var(--line);background:var(--panel);padding:26px;font-size:14px;color:var(--dim)}
+.gatebar.on{display:block}
+.gatebar a{color:var(--gold-hi)}
+.working{display:none;margin-top:26px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim2)}
+.working.on{display:block}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+.working span{animation:pulse 1.4s infinite}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<g id="wmg" fill="currentColor">
+<path transform="translate(30.06859 112) scale(0.08779150 -0.08779150)" d="M744 0 929 729H825L691 137L525 729H425L263 137L126 729H22L209 0H311L474 599L642 0Z"/>
+<path transform="translate(141.34019 112) scale(0.08779150 -0.08779150)" d="M551 332V0H644V729H551V414H176V729H83V0H176V332Z"/>
+<path fill-rule="evenodd" d="M234.877914951989 32h96v96h-96z M239.377914951989 36.5v87.0h87.0v-87.0z"/>
+<path transform="translate(255.92593 112) scale(0.08779150 -0.08779150)" d="M354 647H593V729H21V647H261V0H354Z"/>
+<path transform="translate(360.94239 112) scale(0.08779150 -0.08779150)" d="M79 0H408C477 0 528 19 567 61C603 99 623 151 623 208C623 296 583 349 490 385C557 416 591 469 591 544C591 598 571 644 533 678C494 713 445 729 375 729H79ZM172 415V647H352C404 647 433 640 458 621C484 601 498 571 498 531C498 491 484 461 458 441C433 422 404 415 352 415ZM172 82V333H399C481 333 530 286 530 207C530 129 481 82 399 82Z"/>
+<path transform="translate(450.70507999999995 112) scale(0.08779150 -0.08779150)" d="M391 374 637 729H526L338 443L151 729H38L280 374L22 0H135L335 304L534 0H649Z"/>
+</g></defs></svg>
+
+<div class="wrap">
+  <div class="top">
+    <a href="index.html"><svg viewBox="0 0 539.682 160"><use href="#wmg"/></svg></a>
+    <div class="right"><a href="app.html">Portal</a><span class="micro" id="who"></span></div>
+  </div>
+
+  <div class="micro">AI Intake · Admin Only</div>
+  <h1>Drop it.<br><span class="ghost">Filed right.</span></h1>
+  <p class="sub">Drop a lease, a rent schedule, a closing statement, or a photo of one. Or just say what changed. The AI reads it, shows you exactly what it will write, and nothing touches the records until you approve it.</p>
+
+  <div class="gatebar" id="gatebar">Sign in on the <a href="app.html">owner portal</a> first, then come back. This page uses your portal session.</div>
+
+  <div id="tool" style="display:none">
+    <div class="zone" id="zone">
+      <div class="big">Drop a file here, or click to choose.</div>
+      <div class="hint">PDF · photo · CSV — leases, rent schedules, statements, closing packages. Excel: export as PDF or CSV first.</div>
+      <input type="file" id="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.csv,.txt" style="display:none">
+    </div>
+    <div class="filecard" id="filecard"><span class="nm" id="fname"></span><span class="meta" id="fmeta"></span><button class="linkbtn" id="clearfile" type="button">Remove</button></div>
+
+    <div class="say">
+      <label for="say">Or tell it what changed (works with or without a file)</label>
+      <textarea id="say" placeholder="Reno rent goes to $26,500 starting July 1 with 3% annual bumps&#10;Add partner Mike Smith, mike@example.com, 40% of RS Henderson"></textarea>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="go" type="button">Read it</button>
+      <span class="status" id="status"></span>
+    </div>
+    <div class="working" id="working"><span>Reading &middot; this takes a few seconds</span></div>
+    <div class="err" id="err"></div>
+
+    <div class="preview" id="preview">
+      <div class="hd"><span class="t">Here is what I will write.</span><span class="micro">Nothing is saved yet</span></div>
+      <div class="sumline" id="sumline"></div>
+      <div id="cards"></div>
+      <div class="actions">
+        <button class="btn gold" id="apply" type="button">Approve and save</button>
+        <button class="linkbtn" id="discard" type="button">Discard</button>
+      </div>
+      <div class="err" id="err2"></div>
+    </div>
+
+    <div class="applied" id="applied"><div class="t">Saved.</div><ul id="donelist"></ul></div>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money=n=>n==null?null:'$'+Math.round(Number(n)).toLocaleString('en-US');
+const API='https://buyuqranpfaugchklqev.supabase.co/functions/v1/drop';
+let TOKEN=null; try{TOKEN=localStorage.getItem('whtbx_token')}catch(e){}
+let FILE=null, PROPOSAL=null;
+
+function err(el,msg){el.textContent=msg;el.classList.add('on')}
+function clr(el){el.textContent='';el.classList.remove('on')}
+
+async function api(action,body){
+  const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({action,token:TOKEN},body||{}))});
+  let j={}; try{j=await r.json()}catch(e){}
+  return {ok:r.ok&&j.ok!==false,status:r.status,...j};
+}
+
+/* gate */
+if(!TOKEN){$('gatebar').classList.add('on')}
+else{$('tool').style.display='block'}
+
+/* file handling */
+const zone=$('zone'), finput=$('file');
+zone.addEventListener('click',()=>finput.click());
+zone.addEventListener('dragover',ev=>{ev.preventDefault();zone.classList.add('over')});
+zone.addEventListener('dragleave',()=>zone.classList.remove('over'));
+zone.addEventListener('drop',ev=>{ev.preventDefault();zone.classList.remove('over');if(ev.dataTransfer.files[0])takeFile(ev.dataTransfer.files[0])});
+finput.addEventListener('change',()=>{if(finput.files[0])takeFile(finput.files[0])});
+$('clearfile').addEventListener('click',()=>{FILE=null;$('filecard').classList.remove('on');finput.value=''});
+
+function takeFile(f){
+  if(f.size>8*1024*1024){err($('err'),'That file is over 8 MB. Export a smaller PDF or a photo of the page.');return}
+  clr($('err'));
+  const rd=new FileReader();
+  rd.onload=()=>{
+    const b64=String(rd.result).split(',')[1];
+    let mt=f.type||'application/octet-stream';
+    if(f.name.toLowerCase().endsWith('.csv'))mt='text/csv';
+    if(f.name.toLowerCase().endsWith('.txt'))mt='text/plain';
+    FILE={name:f.name,media_type:mt,data:b64};
+    $('fname').textContent=f.name;
+    $('fmeta').textContent=(f.size/1024).toFixed(0)+' KB';
+    $('filecard').classList.add('on');
+  };
+  rd.readAsDataURL(f);
+}
+
+/* propose */
+$('go').addEventListener('click',async()=>{
+  clr($('err'));$('preview').classList.remove('on');$('applied').classList.remove('on');
+  const instruction=$('say').value.trim();
+  if(!FILE&&!instruction){err($('err'),'Drop a file or type what changed.');return}
+  $('go').disabled=true;$('working').classList.add('on');
+  const r=await api('propose',{file:FILE,instruction:instruction||null});
+  $('go').disabled=false;$('working').classList.remove('on');
+  if(!r.ok){err($('err'),r.error||'Could not read that. Try again.');return}
+  PROPOSAL=r.proposal;
+  paint(PROPOSAL);
+});
+
+function rowIf(k,v){return v==null||v===''?'':'<div class="row"><span class="k">'+k+'</span><span class="v">'+esc(v)+'</span></div>'}
+function paint(p){
+  $('sumline').textContent=p.summary||'';
+  $('cards').innerHTML=(p.entities||[]).map(e=>{
+    const pr=e.property||{}, L=e.lease||null;
+    const tag=e.match?'<span class="tag">Updates '+esc(e.match)+'</span>':'<span class="tag new">New entity</span>';
+    let rows='';
+    rows+=rowIf('Property',pr.name);
+    rows+=rowIf('Address',pr.address);
+    rows+=rowIf('Purchase price',money(pr.purchase_price));
+    rows+=rowIf('Purchase date',pr.purchase_date);
+    rows+=rowIf('Current value',money(pr.current_value));
+    rows+=rowIf('Mortgage',money(pr.mortgage_amount));
+    rows+=rowIf('Lender',pr.lender);
+    if(L){
+      rows+=rowIf('Tenant',L.tenant);
+      rows+=rowIf('Lease start',L.start_date);
+      rows+=L.base_rent?'<div class="row"><span class="k">Base rent</span><span class="v gold-v">'+money(L.base_rent)+'/mo'+(L.escalator_pct?' &middot; '+L.escalator_pct+'%/yr':'')+'</span></div>':'';
+      rows+=rowIf('Actual rent billed',money(L.actual_rent)&&money(L.actual_rent)+'/mo');
+    }
+    (e.owners||[]).forEach(o=>{rows+='<div class="row"><span class="k">Owner</span><span class="v">'+esc(o.name||o.email||'')+' &middot; <span class="gold-v">'+esc(o.pct)+'%</span></span></div>'});
+    return '<div class="pcard"><div class="nm"><span>'+esc(e.entity_name||e.match||'')+'</span>'+tag+'</div><div class="rows">'+(rows||'<div class="row"><span class="k">Nothing readable</span></div>')+'</div></div>';
+  }).join('');
+  $('preview').classList.add('on');
+  $('preview').scrollIntoView({behavior:'smooth'});
+}
+
+/* apply */
+$('apply').addEventListener('click',async()=>{
+  clr($('err2'));$('apply').disabled=true;$('apply').textContent='Saving';
+  const r=await api('apply',{proposal:PROPOSAL});
+  $('apply').disabled=false;$('apply').textContent='Approve and save';
+  if(!r.ok){err($('err2'),r.error||'Could not save.');return}
+  $('preview').classList.remove('on');
+  $('donelist').innerHTML=(r.done||[]).map(d=>'<li>'+esc(d)+'</li>').join('');
+  $('applied').classList.add('on');
+  FILE=null;$('filecard').classList.remove('on');$('say').value='';finput.value='';
+});
+$('discard').addEventListener('click',()=>{PROPOSAL=null;$('preview').classList.remove('on')});
+
+/* who */
+(async()=>{
+  if(!TOKEN)return;
+  const r=await fetch('https://buyuqranpfaugchklqev.supabase.co/functions/v1/quick-endpoinportalt',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'me',token:TOKEN})});
+  const j=await r.json().catch(()=>({}));
+  if(j.ok&&j.owner){$('who').textContent=j.owner.email;if(j.owner.role!=='admin'){$('tool').style.display='none';$('gatebar').classList.add('on');$('gatebar').innerHTML='This page is for the admin. Your records live on the <a href="app.html">owner portal</a>.'}}
+  else{$('tool').style.display='none';$('gatebar').classList.add('on')}
+})();
+</script>
+</body>
+</html>
