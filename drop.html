@@ -108,8 +108,8 @@ h1 .ghost{color:var(--dim)}
   <div id="tool" style="display:none">
     <div class="zone" id="zone">
       <div class="big">Drop a file here, or click to choose.</div>
-      <div class="hint">PDF · photo · CSV — leases, rent schedules, statements, closing packages. Excel: export as PDF or CSV first.</div>
-      <input type="file" id="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.csv,.txt" style="display:none">
+      <div class="hint">PDF · photo · Excel · CSV · leases, rent schedules, statements, closing packages.</div>
+      <input type="file" id="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.csv,.txt,.xlsx,.xlsm,.xls" style="display:none">
     </div>
     <div class="filecard" id="filecard"><span class="nm" id="fname"></span><span class="meta" id="fmeta"></span><button class="linkbtn" id="clearfile" type="button">Remove</button></div>
 
@@ -140,6 +140,7 @@ h1 .ghost{color:var(--dim)}
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -173,6 +174,24 @@ $('clearfile').addEventListener('click',()=>{FILE=null;$('filecard').classList.r
 function takeFile(f){
   if(f.size>8*1024*1024){err($('err'),'That file is over 8 MB. Export a smaller PDF or a photo of the page.');return}
   clr($('err'));
+  const low=f.name.toLowerCase();
+  if(/\.(xlsx|xlsm|xls)$/.test(low)){
+    if(!window.XLSX){err($('err'),'Excel reader did not load. Refresh and try again.');return}
+    const rx=new FileReader();
+    rx.onload=()=>{
+      try{
+        const wb=XLSX.read(new Uint8Array(rx.result),{type:'array',cellDates:true});
+        const csv=wb.SheetNames.map(n=>'## SHEET: '+n+'\n'+XLSX.utils.sheet_to_csv(wb.Sheets[n],{blankrows:false,dateNF:'yyyy-mm-dd'})).join('\n\n');
+        const bytes=new TextEncoder().encode(csv);let bin='';for(let i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);
+        FILE={name:f.name,media_type:'text/csv',data:btoa(bin)};
+        $('fname').textContent=f.name;
+        $('fmeta').textContent=(f.size/1024).toFixed(0)+' KB · '+wb.SheetNames.length+' sheet'+(wb.SheetNames.length>1?'s':'');
+        $('filecard').classList.add('on');
+      }catch(e){err($('err'),'Could not open that Excel file. Save it as .xlsx and try again.')}
+    };
+    rx.readAsArrayBuffer(f);
+    return;
+  }
   const rd=new FileReader();
   rd.onload=()=>{
     const b64=String(rd.result).split(',')[1];
