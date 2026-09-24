@@ -246,10 +246,11 @@ function enter(owner){
   $('gate').style.display='none';$('portal').style.display='block';
   $('who').textContent=owner.email||'';
   const tabs=[['overview','Overview'],['statements','Statements'],['documents','Documents'],['activity','Activity']];
-  if(owner.role==='admin')tabs.push(['admin','Admin']);
+  const adm=owner.role==='admin'||owner.role==='superadmin';
+  if(adm)tabs.push(['admin','Admin']);
   $('tabs').innerHTML=tabs.map(t=>'<button data-t="'+t[0]+'">'+t[1]+'</button>').join('');
   $('tabs').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.t;paint()}));
-  if(owner.role==='admin'){const d=document.createElement('button');d.textContent='Drop';d.addEventListener('click',()=>{location.href='drop.html'});$('tabs').appendChild(d);}
+  if(adm){const d=document.createElement('button');d.textContent='Drop';d.addEventListener('click',()=>{location.href='drop.html'});$('tabs').appendChild(d);}
   document.title='WHTBX · Portal';
   load();
 }
@@ -339,7 +340,8 @@ function viewActivity(){
 /* ---------------- admin ---------------- */
 async function viewAdmin(){
   if(!ADMIN){$('view').innerHTML='<div class="loading">Loading</div>';const r=await data('admin.overview');if(!r.ok){$('view').innerHTML='<div class="loading">'+esc(r.error||'')+'</div>';return}ADMIN=r}
-  const subs=[['properties','Properties'],['lease','Lease & Rent'],['work','Work Log'],['owners','Owners']];
+  const SUPER=ME.role==='superadmin';
+  const subs=[['properties','Properties'],['lease','Lease & Rent'],['work','Work Log'],['owners','Owners & Access']];
   $('view').innerHTML='<div class="phead"><h1>Admin.</h1>'+(ADMIN.demo?'<span class="demo-note">Sample data · connect the database to save changes</span>':'')+'</div>'+
   '<div class="subtabs">'+subs.map(s=>'<button data-s="'+s[0]+'" class="'+(subtab===s[0]?'on':'')+'">'+s[1]+'</button>').join('')+'</div>'+
   '<div id="adminbody"></div>';
@@ -351,7 +353,7 @@ async function viewAdmin(){
   if(subtab==='properties'){
     B.innerHTML='<div class="sec"><div class="hd"><span class="t">Portfolio</span><span class="micro">'+ADMIN.entities.length+' entities</span></div>'+
       ADMIN.entities.map(e=>'<div class="rowline"><span><span class="main">'+esc(e.name)+'</span> <span class="sub">· '+esc(e.property.name||'')+' · '+esc(e.property.address||'')+'</span></span>'+
-      '<span class="right"><span class="sub">Value '+money(e.value)+'</span><span class="sub">Debt '+money(e.debt)+'</span>'+rentBadge(e.rent)+'</span></div>').join('')+
+      '<span class="right"><span class="sub">Value '+money(e.value)+'</span><span class="sub">Debt '+money(e.debt)+'</span>'+rentBadge(e.rent)+(SUPER?'<button class="linkbtn" data-del="entity" data-id="'+esc(e.id)+'">Remove</button>':'')+'</span></div>').join('')+
     '</div>'+
     formSec('Add a property','fprop',[
       ['entity_name','Entity (LLC) name','text'],['name','Property name','text'],['address','Address','text'],
@@ -375,16 +377,21 @@ async function viewAdmin(){
       ['cost','Cost $','number'],['description','What was done','text','',true]
     ],'admin.add_work')+
     '<div class="sec"><div class="hd"><span class="t">Recent work</span></div>'+
-      ADMIN.entities.flatMap(e=>(e.work||[]).slice(0,3).map(w=>'<div class="rowline"><span><span class="main">'+esc(w.description)+'</span> <span class="sub">· '+esc(e.name)+' · '+esc(w.work_date)+'</span></span><span class="right">'+money(w.cost)+'</span></div>')).join('')+
+      ADMIN.entities.flatMap(e=>(e.work||[]).slice(0,3).map(w=>'<div class="rowline"><span><span class="main">'+esc(w.description)+'</span> <span class="sub">· '+esc(e.name)+' · '+esc(w.work_date)+'</span></span><span class="right">'+money(w.cost)+(SUPER?'<button class="linkbtn" data-del="work" data-id="'+esc(w.id)+'">Remove</button>':'')+'</span></div>')).join('')+
     '</div>';
   }
   if(subtab==='owners'){
     const entOpts=ADMIN.entities.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.name)+'</option>').join('');
-    B.innerHTML='<div class="sec"><div class="hd"><span class="t">Owners</span></div>'+
-      ADMIN.owners.map(o=>'<div class="rowline"><span><span class="main">'+esc(o.name)+'</span> <span class="sub">· '+esc(o.email)+'</span></span><span class="right"><span class="badge'+(o.role==='admin'?' ok':'')+'">'+esc(o.role)+'</span></span></div>').join('')+
+    B.innerHTML='<div class="sec"><div class="hd"><span class="t">Accounts</span><span class="micro">'+ADMIN.owners.length+' accounts</span></div>'+
+      ADMIN.owners.map(o=>'<div class="rowline"><span><span class="main">'+esc(o.name)+'</span> <span class="sub">· '+esc(o.email)+'</span></span><span class="right"><span class="badge'+(o.role!=='owner'?' ok':'')+'">'+esc(o.role)+'</span>'+(SUPER&&o.role!=='superadmin'&&o.email!==ME.email?'<button class="linkbtn" data-del="owner" data-id="'+esc(o.email)+'">Remove</button>':'')+'</span></div>').join('')+
     '</div>'+
-    formSec('Add an owner','fowner',[['name','Name','text'],['email','Email','email'],['phone','Phone (for text message step, later)','text']],'admin.add_owner')+
-    formSec('Set ownership on an entity','fpct',[['entity_id','Entity','select',entOpts],['owner_email','Owner email','email'],['pct','Ownership %','number']],'admin.set_ownership');
+    '<div class="sec"><div class="hd"><span class="t">Who sees what</span><span class="micro">per entity · 0% = view only</span></div>'+
+      (ADMIN.entities.map(e=>'<div class="rowline"><span class="main">'+esc(e.name)+'</span><span class="right">'+
+        ((e.partners&&e.partners.length)?e.partners.map(p=>'<span class="chip">'+esc(p.name||p.email)+' · '+p.pct+'%'+(SUPER?' <button class="linkbtn" data-del="access" data-id="'+esc(p.email)+'" data-eid="'+esc(e.id)+'">×</button>':'')+'</span>').join(''):'<span class="sub">No one assigned</span>')+
+      '</span></div>').join('')||'<div class="rowline"><span class="sub">No entities yet</span></div>')+
+    '</div>'+
+    (SUPER?formSec('Create an account','fowner',[['name','Name','text'],['email','Email','email'],['phone','Phone (for text message step, later)','text'],['role','Role','select','<option value="owner">Owner</option><option value="admin">Admin</option>']],'admin.add_owner')+
+    formSec('Assign a view and ownership','fpct',[['entity_id','Entity','select',entOpts],['owner_email','Account email','email'],['pct','Ownership % (0 = view only)','number']],'admin.set_ownership'):'<div class="sec"><div class="hd"><span class="t">Accounts and access are managed by the super admin.</span></div></div>');
   }
   document.querySelectorAll('form[data-action]').forEach(f=>f.addEventListener('submit',async ev=>{
     ev.preventDefault();
@@ -395,6 +402,15 @@ async function viewAdmin(){
     const ok=f.querySelector('.okmsg'),er=f.querySelector('.err');clr(er);ok.classList.remove('on');
     if(r.ok){ok.textContent='Saved.';ok.classList.add('on');f.reset();ADMIN=null;const p=await data('portfolio');if(p.ok)PF=p;viewAdmin()}
     else err(er,r.error||'Could not save.');
+  }));
+  document.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',async()=>{
+    if(!b.dataset.armed){b.dataset.armed='1';const t=b.textContent;b.textContent='Sure?';setTimeout(()=>{if(b.dataset){b.dataset.armed='';b.textContent=t}},2600);return}
+    const kind=b.dataset.del;
+    const args=kind==='entity'?['admin.delete_entity',{entity_id:b.dataset.id}]:kind==='work'?['admin.delete_work',{work_id:b.dataset.id}]:kind==='owner'?['admin.delete_owner',{owner_email:b.dataset.id}]:['admin.remove_ownership',{entity_id:b.dataset.eid,owner_email:b.dataset.id}];
+    b.disabled=true;
+    const r=await data(args[0],args[1]);
+    if(r.ok){ADMIN=null;const p=await data('portfolio');if(p.ok)PF=p;viewAdmin()}
+    else{b.disabled=false;b.textContent=r.error||'Failed'}
   }));
 }
 function formSec(title,id,fields,action){

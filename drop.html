@@ -245,7 +245,7 @@ $('discard').addEventListener('click',()=>{PROPOSAL=null;$('preview').classList.
   if(!TOKEN)return;
   const r=await fetch('https://buyuqranpfaugchklqev.supabase.co/functions/v1/quick-endpoinportalt',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'me',token:TOKEN})});
   const j=await r.json().catch(()=>({}));
-  if(j.ok&&j.owner){$('who').textContent=j.owner.email;if(j.owner.role!=='admin'){$('tool').style.display='none';$('gatebar').classList.add('on');$('gatebar').innerHTML='This page is for the admin. Your records live on the <a href="app.html">owner portal</a>.'}}
+  if(j.ok&&j.owner){$('who').textContent=j.owner.email;if(j.owner.role!=='admin'&&j.owner.role!=='superadmin'){$('tool').style.display='none';$('gatebar').classList.add('on');$('gatebar').innerHTML='This page is for the admin. Your records live on the <a href="app.html">owner portal</a>.'}}
   else{$('tool').style.display='none';$('gatebar').classList.add('on')}
 })();
 </script>
