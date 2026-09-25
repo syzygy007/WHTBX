@@ -71,6 +71,18 @@ h1 .ghost{color:var(--dim)}
 .row .k{color:var(--dim2)}
 .row .v{color:var(--txt);text-align:right}
 .gold-v{color:var(--gold-hi)}
+.pcard.off{opacity:.38}
+.nmleft{display:flex;align-items:center;gap:14px;flex:1;min-width:200px}
+.incbox{width:16px;height:16px;accent-color:var(--gold);cursor:pointer;flex:none}
+.v-in{background:transparent;border:none;border-bottom:1px dashed rgba(237,234,228,.2);color:var(--txt);font:inherit;font-size:13px;text-align:right;padding:2px 0 3px;outline:none;min-width:190px;color-scheme:dark}
+.v-in:focus{border-bottom:1px solid var(--gold)}
+.v-in::placeholder{color:var(--dim2)}
+.s-in{background:transparent;border:none;border-bottom:1px dashed rgba(237,234,228,.2);color:var(--txt);font:inherit;font-size:13px;padding:2px 0 3px;outline:none;color-scheme:dark}
+.s-in:focus{border-bottom:1px solid var(--gold)}
+.s-rent{text-align:right;width:110px;color:var(--gold-hi)}
+.srk{display:flex;gap:10px;align-items:center;color:var(--dim2)}
+.srow .v{display:flex;gap:12px;align-items:center;justify-content:flex-end}
+.schedhd .k{color:var(--dim)}
 .applied{display:none;margin-top:30px;border:1px solid rgba(143,191,138,.35);background:var(--panel);padding:20px 22px}
 .applied.on{display:block}
 .applied .t{color:var(--green);font-size:14px;margin-bottom:10px}
@@ -221,36 +233,41 @@ $('go').addEventListener('click',async()=>{
   paint(PROPOSAL);
 });
 
-function rowIf(k,v){return v==null||v===''?'':'<div class="row"><span class="k">'+k+'</span><span class="v">'+esc(v)+'</span></div>'}
+const FIELDS=[
+  ['Property name','property.name','text'],
+  ['Address','property.address','text'],
+  ['Purchase price $','property.purchase_price','number'],
+  ['Purchase date','property.purchase_date','date'],
+  ['Current value $','property.current_value','number'],
+  ['Mortgage $','property.mortgage_amount','number'],
+  ['Lender','property.lender','text'],
+  ['Tenant','lease.tenant','text'],
+  ['Lease start','lease.start_date','date'],
+  ['Lease end','lease.end_date','date'],
+  ['Base rent $/mo (fallback)','lease.base_rent','number'],
+  ['Escalator %/yr (fallback)','lease.escalator_pct','number'],
+  ['Billing today $/mo','lease.actual_rent','number']
+];
+function getPath(o,p){const k=p.split('.');const a=o&&o[k[0]];return a==null?null:(a[k[1]]==null?null:a[k[1]])}
+function srowHtml(a,b,r){return '<div class="row srow"><span class="k srk"><input class="s-in" data-s="start" type="date" value="'+esc(a||'')+'"><span>&rarr;</span><input class="s-in" data-s="end" type="date" value="'+esc(b||'')+'" title="Blank = open"></span><span class="v"><input class="s-in s-rent" data-s="rent" type="number" step="any" value="'+esc(r==null?'':r)+'" placeholder="$/mo"><button class="linkbtn sdel" type="button" title="Remove this period">&times;</button></span></div>'}
+function wireDel(root){root.querySelectorAll('.sdel').forEach(b=>{if(b.dataset.w)return;b.dataset.w='1';b.addEventListener('click',()=>b.closest('.srow').remove())})}
 function paint(p){
-  $('sumline').textContent=p.summary||'';
+  $('sumline').textContent=(p.summary||'')+' Untick a record to leave it out. Every field is editable before you save.';
   $('cards').innerHTML=(p.entities||[]).map((e,ix)=>{
-    const pr=e.property||{}, L=e.lease||null;
     const tag=e.match?'<span class="tag">Updates '+esc(e.match)+'</span>':'<span class="tag new">New entity</span>';
-    let rows='';
-    rows+=rowIf('Property',pr.name);
-    rows+=rowIf('Address',pr.address);
-    rows+=rowIf('Purchase price',money(pr.purchase_price));
-    rows+=rowIf('Purchase date',pr.purchase_date);
-    rows+=rowIf('Current value',money(pr.current_value));
-    rows+=rowIf('Mortgage',money(pr.mortgage_amount));
-    rows+=rowIf('Lender',pr.lender);
-    if(L){
-      rows+=rowIf('Tenant',L.tenant);
-      rows+=rowIf('Lease start',L.start_date);
-      rows+=rowIf('Lease end',L.end_date);
-      rows+=L.base_rent?'<div class="row"><span class="k">Base rent</span><span class="v gold-v">'+money(L.base_rent)+'/mo'+(L.escalator_pct?' &middot; '+L.escalator_pct+'%/yr':'')+'</span></div>':'';
-      rows+=rowIf('Actual rent billed',money(L.actual_rent)&&money(L.actual_rent)+'/mo');
-    }
-    const S=e.rent_schedule||[];
-    if(S.length){
-      rows+='<div class="row"><span class="k">Rent schedule</span><span class="v">'+S.length+' period'+(S.length>1?'s':'')+'</span></div>';
-      S.forEach(s=>{rows+='<div class="row"><span class="k">'+esc(s.start_date)+' &rarr; '+(s.end_date?esc(s.end_date):'open')+'</span><span class="v gold-v">'+money(s.monthly_rent)+'/mo</span></div>'});
-    }
+    const nameEl=e.match?'<span>'+esc(e.match)+'</span>':'<input class="nm-in" data-ix="'+ix+'" value="'+esc(e.entity_name||'')+'" placeholder="Entity (LLC) name">';
+    let rows=FIELDS.map(f=>{
+      const v=getPath(e,f[1]);
+      return '<div class="row"><span class="k">'+f[0]+'</span><input class="v-in" data-f="'+f[1]+'" type="'+f[2]+'"'+(f[2]==='number'?' step="any"':'')+' value="'+esc(v==null?'':v)+'" placeholder="&middot;"></div>';
+    }).join('');
+    rows+='<div class="row schedhd"><span class="k">Rent schedule</span><span class="v"><button class="linkbtn addstep" type="button">+ Add a period</button></span></div>';
+    rows+=(e.rent_schedule||[]).map(s=>srowHtml(s.start_date,s.end_date,s.monthly_rent)).join('');
     (e.owners||[]).forEach(o=>{rows+='<div class="row"><span class="k">Owner</span><span class="v">'+esc(o.name||o.email||'')+' &middot; <span class="gold-v">'+esc(o.pct)+'%</span></span></div>'});
-    const nameEl=e.match?'<span>'+esc(e.match)+'</span>':'<input class="nm-in" data-ix="'+ix+'" value="'+esc(e.entity_name||'')+'" placeholder="Entity (LLC) name" title="Click to rename before saving">';
-    return '<div class="pcard"><div class="nm">'+nameEl+tag+'</div><div class="rows">'+(rows||'<div class="row"><span class="k">Nothing readable</span></div>')+'</div></div>';
+    return '<div class="pcard" data-card="'+ix+'"><div class="nm"><span class="nmleft"><input type="checkbox" class="incbox" checked title="Untick to leave this record out">'+nameEl+'</span>'+tag+'</div><div class="rows">'+rows+'</div></div>';
   }).join('');
+  document.querySelectorAll('.incbox').forEach(c=>c.addEventListener('change',()=>{c.closest('.pcard').classList.toggle('off',!c.checked)}));
+  document.querySelectorAll('.addstep').forEach(b=>b.addEventListener('click',()=>{b.closest('.row').insertAdjacentHTML('afterend',srowHtml('','',''));wireDel(b.closest('.pcard'))}));
+  wireDel(document);
   $('preview').classList.add('on');
   $('preview').scrollIntoView({behavior:'smooth'});
 }
@@ -258,11 +275,30 @@ function paint(p){
 /* apply */
 $('apply').addEventListener('click',async()=>{
   clr($('err2'));
-  let blank=false;
-  document.querySelectorAll('.nm-in').forEach(i=>{const v=i.value.trim();if(!v)blank=true;PROPOSAL.entities[+i.dataset.ix].entity_name=v});
-  if(blank){err($('err2'),'Every entity needs a name.');return}
+  const out=[];let blank=false;
+  document.querySelectorAll('.pcard').forEach(card=>{
+    if(!card.querySelector('.incbox').checked)return;
+    const e=PROPOSAL.entities[+card.dataset.card];
+    const nm=card.querySelector('.nm-in');
+    if(nm){e.entity_name=nm.value.trim();if(!e.entity_name)blank=true}
+    card.querySelectorAll('.v-in').forEach(i=>{
+      const k=i.dataset.f.split('.'),v=i.value.trim();
+      if(!e[k[0]])e[k[0]]={};
+      e[k[0]][k[1]]=v===''?null:(i.type==='number'?Number(v):v);
+    });
+    const sched=[];
+    card.querySelectorAll('.srow').forEach(rw=>{
+      const st=rw.querySelector('[data-s="start"]').value,en=rw.querySelector('[data-s="end"]').value,rt=rw.querySelector('[data-s="rent"]').value;
+      if(st&&rt!=='')sched.push({start_date:st,end_date:en||null,monthly_rent:Number(rt)});
+    });
+    e.rent_schedule=sched;
+    if(e.lease&&Object.values(e.lease).every(v=>v==null))e.lease=null;
+    out.push(e);
+  });
+  if(blank){err($('err2'),'Every included entity needs a name.');return}
+  if(!out.length){err($('err2'),'Nothing is ticked. Include at least one record.');return}
   $('apply').disabled=true;$('apply').textContent='Saving';
-  const r=await api('apply',{proposal:PROPOSAL});
+  const r=await api('apply',{proposal:{summary:PROPOSAL.summary,entities:out}});
   $('apply').disabled=false;$('apply').textContent='Approve and save';
   if(!r.ok){err($('err2'),r.error||'Could not save.');return}
   $('preview').classList.remove('on');
