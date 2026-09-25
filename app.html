@@ -104,7 +104,12 @@ button{font-family:inherit}
 .ecard .top .addr{font-size:12px;color:var(--dim2)}
 .bar-wrap{padding:18px 24px 6px}
 .bar-row{display:flex;align-items:center;gap:16px}
-.track{flex:1;height:10px;background:#1D1C19;border:1px solid rgba(237,234,228,.07);position:relative;overflow:visible}
+.track{flex:1;height:10px;background:#1D1C19;border:1px solid rgba(237,234,228,.07);position:relative;overflow:hidden;display:flex}
+.seg{height:100%;flex:none;min-width:0}
+.seg.me{box-shadow:0 0 10px rgba(232,185,90,.6),0 0 26px rgba(232,185,90,.28)}
+.ofilter{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+.ofilter button{background:none;border:1px solid var(--line);color:var(--dim);font-size:12px;padding:8px 16px;cursor:pointer;transition:.2s;font-family:inherit}
+.ofilter button.on{border-color:var(--gold);color:var(--gold-hi)}
 .fill{position:absolute;left:0;top:-1px;bottom:-1px;background:linear-gradient(90deg,var(--gold-deep),var(--gold));
   box-shadow:0 0 10px rgba(232,185,90,.6),0 0 26px rgba(232,185,90,.28);transition:width 1s ease}
 .pctlab{font-size:20px;color:var(--gold-hi);text-shadow:0 0 14px rgba(240,196,106,.75);min-width:64px;text-align:right}
@@ -143,6 +148,61 @@ button{font-family:inherit}
 .okmsg.on{display:block}
 .demo-note{font-size:12px;color:var(--amber)}
 .loading{padding:60px;text-align:center;color:var(--dim2);font-size:13px;letter-spacing:.14em;text-transform:uppercase}
+
+/* drop tab */
+.zone{border:1px dashed rgba(237,234,228,.28);background:var(--panel);padding:46px 30px;text-align:center;cursor:pointer;transition:.2s}
+.zone:hover,.zone.over{border-color:var(--gold);background:var(--panel2)}
+.zone .big{font-size:18px}
+.zone .hint{margin-top:10px;font-size:12px;color:var(--dim2)}
+.filecard{display:none;margin-top:14px;padding:14px 18px;border:1px solid var(--line);background:var(--panel);font-size:13px;justify-content:space-between;align-items:center;gap:14px}
+.filecard.on{display:flex}
+.filecard .fnm{color:var(--txt)}
+.filecard .fmeta{color:var(--dim2);font-size:12px}
+.say{margin-top:24px}
+.say label{display:block;font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px;color:var(--dim)}
+.say textarea{width:100%;min-height:70px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-family:inherit;font-size:15px;font-weight:300;padding:14px 16px;outline:none;resize:vertical;border-radius:0}
+.say textarea:focus{border-color:rgba(237,234,228,.4)}
+.say textarea::placeholder{color:var(--dim2)}
+.dactions{margin-top:20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.dstatus{font-size:12px;color:var(--dim2)}
+.working{display:none;margin-top:22px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim2)}
+.working.on{display:block}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+.working span{animation:pulse 1.4s infinite}
+.preview{display:none;margin-top:44px}
+.preview.on{display:block}
+.preview .hd2{display:flex;justify-content:space-between;align-items:baseline;gap:14px;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:18px;flex-wrap:wrap}
+.preview .hd2 .t{font-size:20px}
+.sumline{font-size:13px;color:var(--dim);font-weight:300;margin-bottom:20px}
+.pcard{border:1px solid var(--line);background:var(--panel);margin-bottom:16px}
+.pcard .pnm{display:flex;justify-content:space-between;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);font-size:16px;flex-wrap:wrap}
+.pcard.off{opacity:.38}
+.tag{font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:4px 9px;border:1px solid var(--line);color:var(--dim);align-self:center}
+.tag.new{border-color:rgba(232,185,90,.5);color:var(--gold-hi)}
+.nm-in{flex:1;min-width:200px;background:transparent;border:none;border-bottom:1px dashed rgba(232,185,90,.45);color:var(--txt);font:inherit;font-size:16px;padding:2px 0 4px;outline:none}
+.nm-in:focus{border-bottom:1px solid var(--gold)}
+.nmleft{display:flex;align-items:center;gap:14px;flex:1;min-width:200px}
+.incbox{width:16px;height:16px;accent-color:var(--gold);cursor:pointer;flex:none}
+.rows{padding:6px 0}
+.row{display:flex;justify-content:space-between;gap:16px;padding:8px 20px;font-size:13px}
+.row .k{color:var(--dim2)}
+.row .v{color:var(--txt);text-align:right}
+.gold-v{color:var(--gold-hi)}
+.v-in{background:transparent;border:none;border-bottom:1px dashed rgba(237,234,228,.2);color:var(--txt);font:inherit;font-size:13px;text-align:right;padding:2px 0 3px;outline:none;min-width:190px;color-scheme:dark}
+.v-in:focus{border-bottom:1px solid var(--gold)}
+.v-in::placeholder{color:var(--dim2)}
+.s-in{background:transparent;border:none;border-bottom:1px dashed rgba(237,234,228,.2);color:var(--txt);font:inherit;font-size:13px;padding:2px 0 3px;outline:none;color-scheme:dark}
+.s-in:focus{border-bottom:1px solid var(--gold)}
+.s-rent{text-align:right;width:110px;color:var(--gold-hi)}
+.srk{display:flex;gap:10px;align-items:center;color:var(--dim2);flex-wrap:wrap}
+.srow .v,.orow .v,.wrow .v{display:flex;gap:12px;align-items:center;justify-content:flex-end}
+.schedhd .k{color:var(--dim)}
+.o-name{width:130px}
+.o-mail{min-width:190px}
+.applied{display:none;margin-top:26px;border:1px solid rgba(143,191,138,.35);background:var(--panel);padding:20px 22px}
+.applied.on{display:block}
+.applied .t{color:var(--green);font-size:14px;margin-bottom:10px}
+.applied li{font-size:13px;color:var(--dim);margin:5px 0 5px 18px}
 </style>
 </head>
 <body>
@@ -209,6 +269,7 @@ button{font-family:inherit}
   <div class="pwrap" id="view"><div class="loading">Loading</div></div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -255,10 +316,10 @@ function enter(owner){
   $('who').textContent=owner.email||'';
   const tabs=[['overview','Overview'],['statements','Statements'],['documents','Documents'],['activity','Activity']];
   const adm=owner.role==='admin'||owner.role==='superadmin';
-  if(adm)tabs.push(['admin','Admin']);
+  if(adm)tabs.push(['admin','Admin'],['drop','Drop']);
   $('tabs').innerHTML=tabs.map(t=>'<button data-t="'+t[0]+'">'+t[1]+'</button>').join('');
   $('tabs').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.t;paint()}));
-  if(adm){const d=document.createElement('button');d.textContent='Drop';d.addEventListener('click',()=>{location.href='drop.html'});$('tabs').appendChild(d);}
+  if(adm&&location.hash==='#drop')tab='drop';
   document.title='WHTBX · Portal';
   load();
 }
@@ -276,29 +337,50 @@ function paint(){
   if(tab==='documents')return viewDocuments();
   if(tab==='activity')return viewActivity();
   if(tab==='admin')return viewAdmin();
+  if(tab==='drop')return viewDrop();
 }
 const greet=()=>{const h=new Date().getHours();return h<12?'Good morning':h<17?'Good afternoon':'Good evening'};
 
 /* ---------------- overview ---------------- */
+let OFILT=null;
+const SEGC=['#7A6647','#5A4E3B','#8C7355','#494136','#6B5A44','#3E382F'];
 function viewOverview(){
-  const t=PF.totals;
+  const owners={};PF.entities.forEach(e=>(e.partners||[]).forEach(p=>{if(p.email)owners[p.email]=p.name||p.email}));
+  if(OFILT&&!owners[OFILT])OFILT=null;
+  const list=OFILT?PF.entities.filter(e=>(e.partners||[]).some(p=>p.email===OFILT)):PF.entities;
+  const t={value:0,debt:0,equity:0,myEquity:0};
+  list.forEach(e=>{t.value+=e.value;t.debt+=e.debt;t.equity+=e.equity;
+    if(OFILT){const p=(e.partners||[]).find(x=>x.email===OFILT);t.myEquity+=p?e.equity*Number(p.pct)/100:0}
+    else t.myEquity+=e.myEquity;});
+  const hi=OFILT||ME.email;
+  const eqLabel=OFILT?esc(String(owners[OFILT]||'').split(' ')[0])+' equity':'Your equity';
+  const shLabel=OFILT?esc(String(owners[OFILT]||'').split(' ')[0])+' share':'your share';
   $('view').innerHTML=
-  '<div class="phead"><h1>'+greet()+', '+esc((ME.name||'').split(' ')[0])+'.</h1><span class="micro">'+PF.entities.length+' entities</span></div>'+
+  '<div class="phead"><h1>'+greet()+', '+esc((ME.name||'').split(' ')[0])+'.</h1><span class="micro">'+list.length+' entities</span></div>'+
+  (Object.keys(owners).length?'<div class="ofilter"><button type="button" data-of="" class="'+(OFILT?'':'on')+'">Everyone</button>'+Object.entries(owners).map(o=>'<button type="button" data-of="'+esc(o[0])+'" class="'+(OFILT===o[0]?'on':'')+'">'+esc(o[1])+'</button>').join('')+'</div>':'')+
   '<div class="tiles">'+
     '<div class="tile"><div class="l">Portfolio value</div><div class="n">'+moneyM(t.value)+'</div></div>'+
     '<div class="tile"><div class="l">Debt</div><div class="n">'+moneyM(t.debt)+'</div></div>'+
     '<div class="tile"><div class="l">Equity</div><div class="n">'+moneyM(t.equity)+'</div></div>'+
-    '<div class="tile"><div class="l">Your equity</div><div class="n gold">'+moneyM(t.myEquity)+'</div></div>'+
+    '<div class="tile"><div class="l">'+eqLabel+'</div><div class="n gold">'+moneyM(t.myEquity)+'</div></div>'+
   '</div>'+
-  PF.entities.map(e=>{
+  list.map(e=>{
     const r=e.rent||{};
+    let ci=0;
+    const segs=(e.partners||[]).map(p=>{
+      const on=p.email===hi;
+      const bg=on?'linear-gradient(90deg,var(--gold-deep),var(--gold))':SEGC[(ci++)%SEGC.length];
+      return '<div class="seg'+(on?' me':'')+'" style="width:'+p.pct+'%;background:'+bg+'" title="'+esc(p.name||p.email)+' · '+p.pct+'%"></div>';
+    }).join('');
+    const hp=(e.partners||[]).find(p=>p.email===hi);
+    const pl=hp?Number(hp.pct):(OFILT?0:e.pct);
     return '<div class="ecard">'+
     '<div class="top"><div class="nm">'+esc(e.name)+'</div><div class="addr">'+esc(e.property.name||'')+' · '+esc(e.property.address||'')+'</div></div>'+
     '<div class="bar-wrap"><div class="bar-row">'+
-      '<div class="track"><div class="fill" style="width:'+e.pct+'%"></div></div>'+
-      '<div class="pctlab">'+e.pct+'%<small>your share</small></div>'+
+      '<div class="track">'+segs+'</div>'+
+      '<div class="pctlab">'+pl+'%<small>'+shLabel+'</small></div>'+
     '</div></div>'+
-    '<div class="partners">'+(e.partners||[]).map(p=>'<span class="chip">'+esc(p.name)+' · '+p.pct+'%</span>').join('')+'</div>'+
+    '<div class="partners">'+(e.partners||[]).map(p=>'<span class="chip'+(p.email===hi?' goldc':'')+'">'+esc(p.name)+' · '+p.pct+'%</span>').join('')+'</div>'+
     '<div class="figures">'+
       '<div><div class="l">Value</div><div class="v">'+money(e.value)+'</div></div>'+
       '<div><div class="l">Debt</div><div class="v">'+money(e.debt)+'</div></div>'+
@@ -308,6 +390,7 @@ function viewOverview(){
     (e.lease?'<div class="rentline"><span>'+esc(e.lease.tenant||'Lease')+(r.expected!=null?' · rent per agreement '+money(r.expected)+'/mo':'')+(r.actual!=null?' · billing '+money(r.actual)+'/mo':'')+(r.upcoming?' · goes to '+money(r.upcoming.monthly_rent)+' on '+esc(r.upcoming.step_start):'')+'</span>'+rentBadge(r)+'</div>':'')+
     '</div>';
   }).join('');
+  document.querySelectorAll('.ofilter button').forEach(b=>b.addEventListener('click',()=>{OFILT=b.dataset.of||null;viewOverview()}));
 }
 function rentBadge(r){
   if(!r||(r.expected==null&&r.actual==null))return '<span class="badge">No schedule</span>';
@@ -485,6 +568,179 @@ function formSec(title,id,fields,action){
     return '<div class="field'+(span?' span3':'')+'"><label>'+label+'</label>'+inner+'</div>';
   }).join('')+
   '</div><div class="formfoot"><button class="btn gold" type="submit">Save</button><span class="okmsg"></span><span class="err" style="margin-top:0"></span></div></form></div>';
+}
+
+/* ---------------- drop tab ---------------- */
+const FIELDS=[
+  ['Property name','property.name','text'],
+  ['Address','property.address','text'],
+  ['Purchase price $','property.purchase_price','number'],
+  ['Purchase date','property.purchase_date','date'],
+  ['Current value $','property.current_value','number'],
+  ['Mortgage $','property.mortgage_amount','number'],
+  ['Lender','property.lender','text'],
+  ['Tenant','lease.tenant','text'],
+  ['Lease start','lease.start_date','date'],
+  ['Lease end','lease.end_date','date'],
+  ['Base rent $/mo (fallback)','lease.base_rent','number'],
+  ['Escalator %/yr (fallback)','lease.escalator_pct','number'],
+  ['Billing today $/mo','lease.actual_rent','number']
+];
+function getPath(o,p){const k=p.split('.');const a=o&&o[k[0]];return a==null?null:(a[k[1]]==null?null:a[k[1]])}
+function srowHtml(a,b,r){return '<div class="row srow"><span class="k srk"><input class="s-in" data-s="start" type="date" value="'+esc(a||'')+'"><span>&rarr;</span><input class="s-in" data-s="end" type="date" value="'+esc(b||'')+'" title="Blank = open"></span><span class="v"><input class="s-in s-rent" data-s="rent" type="number" step="any" value="'+esc(r==null?'':r)+'" placeholder="$/mo"><button class="linkbtn sdel" type="button">&times;</button></span></div>'}
+function orowHtml(n,em,p){return '<div class="row orow"><span class="k srk"><input class="s-in o-name" data-o="name" type="text" placeholder="Name" value="'+esc(n||'')+'"><input class="s-in o-mail" data-o="email" type="email" placeholder="email@" value="'+esc(em||'')+'"></span><span class="v"><input class="s-in s-rent" data-o="pct" type="number" step="any" min="0" max="100" placeholder="%" value="'+esc(p==null?'':p)+'"><button class="linkbtn odel" type="button">&times;</button></span></div>'}
+function wrowHtml(d,v,ds,c){return '<div class="row wrow"><span class="k srk"><input class="s-in" data-w="date" type="date" value="'+esc(d||'')+'"><input class="s-in o-name" data-w="vendor" type="text" placeholder="Vendor" value="'+esc(v||'')+'"><input class="s-in o-mail" data-w="desc" type="text" placeholder="What was done" value="'+esc(ds||'')+'"></span><span class="v"><input class="s-in s-rent" data-w="cost" type="number" step="any" placeholder="$" value="'+esc(c==null?'':c)+'"><button class="linkbtn wdel" type="button">&times;</button></span></div>'}
+function wireDel(root){root.querySelectorAll('.sdel,.odel,.wdel').forEach(b=>{if(b.dataset.w)return;b.dataset.w='1';b.addEventListener('click',()=>b.closest('.srow,.orow,.wrow').remove())})}
+let DFILE=null,DPROP=null;
+async function dapi(action,body){
+  const r=await fetch(DROP_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({action,token:TOKEN},body||{}))});
+  let j={};try{j=await r.json()}catch(e){}
+  return {ok:r.ok&&j.ok!==false,status:r.status,...j};
+}
+function viewDrop(){
+  $('view').innerHTML=
+  '<div class="phead"><h1>Drop.</h1><span class="micro">AI intake · nothing saves until you approve</span></div>'+
+  '<div class="zone" id="dzone"><div class="big">Drop a file here, or click to choose.</div><div class="hint">PDF · photo · Excel · CSV · leases, rent schedules, closing packages, work receipts and invoices.</div>'+
+  '<input type="file" id="dfileinput" accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.csv,.txt,.xlsx,.xlsm,.xls" style="display:none"></div>'+
+  '<div class="filecard" id="dfilecard"><span class="fnm" id="dfname"></span><span class="fmeta" id="dfmeta"></span><button class="linkbtn" id="dclear" type="button">Remove</button></div>'+
+  '<div class="say"><label for="dsay">Or tell it what changed (works with or without a file)</label>'+
+  '<textarea id="dsay" placeholder="Reno rent goes to $26,500 starting July 1 with 3% annual bumps&#10;Roof repair at Brea, Ace Roofing, $4,200, last Tuesday"></textarea></div>'+
+  '<div class="dactions"><button class="btn" id="dgo" type="button">Read it</button><span class="dstatus" id="dstatus"></span></div>'+
+  '<div class="working" id="dworking"><span>Reading &middot; this takes a few seconds</span></div>'+
+  '<div class="err" id="derr"></div>'+
+  '<div class="preview" id="dpreview"><div class="hd2"><span class="t">Here is what I will write.</span><span class="micro">Nothing is saved yet</span></div>'+
+  '<div class="sumline" id="dsumline"></div><div id="dcards"></div>'+
+  '<div class="dactions"><button class="btn gold" id="dapplyb" type="button">Approve and save</button><button class="linkbtn" id="ddiscard" type="button">Discard</button></div>'+
+  '<div class="err" id="derr2"></div></div>'+
+  '<div class="applied" id="dapplied"><div class="t">Saved.</div><ul id="ddonelist"></ul></div>';
+  const zone=$('dzone'),fin=$('dfileinput');
+  zone.addEventListener('click',()=>fin.click());
+  zone.addEventListener('dragover',ev=>{ev.preventDefault();zone.classList.add('over')});
+  zone.addEventListener('dragleave',()=>zone.classList.remove('over'));
+  zone.addEventListener('drop',ev=>{ev.preventDefault();zone.classList.remove('over');if(ev.dataTransfer.files[0])dtakeFile(ev.dataTransfer.files[0])});
+  fin.addEventListener('change',()=>{if(fin.files[0])dtakeFile(fin.files[0])});
+  $('dclear').addEventListener('click',()=>{DFILE=null;$('dfilecard').classList.remove('on');fin.value=''});
+  $('dgo').addEventListener('click',dgo);
+  $('dapplyb').addEventListener('click',dapply);
+  $('ddiscard').addEventListener('click',()=>{DPROP=null;$('dpreview').classList.remove('on')});
+  if(DFILE){$('dfname').textContent=DFILE.name;$('dfmeta').textContent='ready';$('dfilecard').classList.add('on')}
+  if(DPROP)dpaint(DPROP);
+}
+function dtakeFile(f){
+  if(f.size>8*1024*1024){err($('derr'),'That file is over 8 MB. Export a smaller PDF or a photo of the page.');return}
+  clr($('derr'));
+  const low=f.name.toLowerCase();
+  if(/\.(xlsx|xlsm|xls)$/.test(low)){
+    if(!window.XLSX){err($('derr'),'Excel reader did not load. Refresh and try again.');return}
+    const rx=new FileReader();
+    rx.onload=()=>{
+      try{
+        const wb=XLSX.read(new Uint8Array(rx.result),{type:'array',cellDates:true});
+        const csv=wb.SheetNames.map(n=>'## SHEET: '+n+'\n'+XLSX.utils.sheet_to_csv(wb.Sheets[n],{blankrows:false,dateNF:'yyyy-mm-dd'})).join('\n\n');
+        const bytes=new TextEncoder().encode(csv);let bin='';for(let i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);
+        DFILE={name:f.name,media_type:'text/csv',data:btoa(bin)};
+        $('dfname').textContent=f.name;
+        $('dfmeta').textContent=(f.size/1024).toFixed(0)+' KB · '+wb.SheetNames.length+' sheet'+(wb.SheetNames.length>1?'s':'');
+        $('dfilecard').classList.add('on');
+      }catch(e){err($('derr'),'Could not open that Excel file. Save it as .xlsx and try again.')}
+    };
+    rx.readAsArrayBuffer(f);
+    return;
+  }
+  const rd=new FileReader();
+  rd.onload=()=>{
+    const b64=String(rd.result).split(',')[1];
+    let mt=f.type||'application/octet-stream';
+    if(low.endsWith('.csv'))mt='text/csv';
+    if(low.endsWith('.txt'))mt='text/plain';
+    DFILE={name:f.name,media_type:mt,data:b64};
+    $('dfname').textContent=f.name;
+    $('dfmeta').textContent=(f.size/1024).toFixed(0)+' KB';
+    $('dfilecard').classList.add('on');
+  };
+  rd.readAsDataURL(f);
+}
+async function dgo(){
+  clr($('derr'));$('dpreview').classList.remove('on');$('dapplied').classList.remove('on');
+  const instruction=$('dsay').value.trim();
+  if(!DFILE&&!instruction){err($('derr'),'Drop a file or type what changed.');return}
+  $('dgo').disabled=true;$('dworking').classList.add('on');
+  const r=await dapi('propose',{file:DFILE,instruction:instruction||null});
+  $('dgo').disabled=false;$('dworking').classList.remove('on');
+  if(!r.ok){err($('derr'),r.error||'Could not read that. Try again.');return}
+  DPROP=r.proposal;
+  dpaint(DPROP);
+}
+function dpaint(p){
+  $('dsumline').textContent=(p.summary||'')+' Untick a record to leave it out. Every field is editable before you save.';
+  $('dcards').innerHTML=(p.entities||[]).map((e,ix)=>{
+    const tag=e.match?'<span class="tag">Updates '+esc(e.match)+'</span>':'<span class="tag new">New entity</span>';
+    const nameEl=e.match?'<span>'+esc(e.match)+'</span>':'<input class="nm-in" data-ix="'+ix+'" value="'+esc(e.entity_name||'')+'" placeholder="Entity (LLC) name">';
+    let rows=FIELDS.map(f=>{
+      const v=getPath(e,f[1]);
+      return '<div class="row"><span class="k">'+f[0]+'</span><input class="v-in" data-f="'+f[1]+'" type="'+f[2]+'"'+(f[2]==='number'?' step="any"':'')+' value="'+esc(v==null?'':v)+'" placeholder="&middot;"></div>';
+    }).join('');
+    rows+='<div class="row schedhd"><span class="k">Rent schedule</span><span class="v"><button class="linkbtn addstep" type="button">+ Add a period</button></span></div>';
+    rows+=(e.rent_schedule||[]).map(s=>srowHtml(s.start_date,s.end_date,s.monthly_rent)).join('');
+    rows+='<div class="row schedhd"><span class="k">Partners and ownership</span><span class="v"><button class="linkbtn addowner" type="button">+ Add a partner</button></span></div>';
+    rows+=(e.owners||[]).map(o=>orowHtml(o.name,o.email,o.pct)).join('');
+    rows+='<div class="row schedhd"><span class="k">Work done</span><span class="v"><button class="linkbtn addwork" type="button">+ Add work</button></span></div>';
+    rows+=(e.work_items||[]).map(w=>wrowHtml(w.work_date,w.vendor,w.description,w.cost)).join('');
+    return '<div class="pcard" data-card="'+ix+'"><div class="pnm"><span class="nmleft"><input type="checkbox" class="incbox" checked title="Untick to leave this record out">'+nameEl+'</span>'+tag+'</div><div class="rows">'+rows+'</div></div>';
+  }).join('');
+  document.querySelectorAll('.incbox').forEach(c=>c.addEventListener('change',()=>{c.closest('.pcard').classList.toggle('off',!c.checked)}));
+  document.querySelectorAll('.addstep').forEach(b=>b.addEventListener('click',()=>{b.closest('.row').insertAdjacentHTML('afterend',srowHtml('','',''));wireDel(b.closest('.pcard'))}));
+  document.querySelectorAll('.addowner').forEach(b=>b.addEventListener('click',()=>{b.closest('.row').insertAdjacentHTML('afterend',orowHtml('','',''));wireDel(b.closest('.pcard'))}));
+  document.querySelectorAll('.addwork').forEach(b=>b.addEventListener('click',()=>{b.closest('.row').insertAdjacentHTML('afterend',wrowHtml('','','',''));wireDel(b.closest('.pcard'))}));
+  wireDel(document);
+  $('dpreview').classList.add('on');
+  $('dpreview').scrollIntoView({behavior:'smooth'});
+}
+async function dapply(){
+  clr($('derr2'));
+  const out=[];let blank=false;
+  document.querySelectorAll('.pcard').forEach(card=>{
+    if(!card.querySelector('.incbox').checked)return;
+    const e=DPROP.entities[+card.dataset.card];
+    const nm=card.querySelector('.nm-in');
+    if(nm){e.entity_name=nm.value.trim();if(!e.entity_name)blank=true}
+    card.querySelectorAll('.v-in').forEach(i=>{
+      const k=i.dataset.f.split('.'),v=i.value.trim();
+      if(!e[k[0]])e[k[0]]={};
+      e[k[0]][k[1]]=v===''?null:(i.type==='number'?Number(v):v);
+    });
+    const sched=[];
+    card.querySelectorAll('.srow').forEach(rw=>{
+      const st=rw.querySelector('[data-s="start"]').value,en=rw.querySelector('[data-s="end"]').value,rt=rw.querySelector('[data-s="rent"]').value;
+      if(st&&rt!=='')sched.push({start_date:st,end_date:en||null,monthly_rent:Number(rt)});
+    });
+    e.rent_schedule=sched;
+    const owners=[];
+    card.querySelectorAll('.orow').forEach(rw=>{
+      const n=rw.querySelector('[data-o="name"]').value.trim(),em=rw.querySelector('[data-o="email"]').value.trim().toLowerCase(),pc=rw.querySelector('[data-o="pct"]').value;
+      if(em)owners.push({name:n||null,email:em,pct:pc===''?null:Number(pc)});
+    });
+    e.owners=owners;
+    const work=[];
+    card.querySelectorAll('.wrow').forEach(rw=>{
+      const d=rw.querySelector('[data-w="date"]').value,v=rw.querySelector('[data-w="vendor"]').value.trim(),ds=rw.querySelector('[data-w="desc"]').value.trim(),c=rw.querySelector('[data-w="cost"]').value;
+      if(ds)work.push({work_date:d||null,vendor:v||null,description:ds,cost:c===''?null:Number(c)});
+    });
+    e.work_items=work;
+    if(e.lease&&Object.values(e.lease).every(v=>v==null))e.lease=null;
+    out.push(e);
+  });
+  if(blank){err($('derr2'),'Every included entity needs a name.');return}
+  if(!out.length){err($('derr2'),'Nothing is ticked. Include at least one record.');return}
+  $('dapplyb').disabled=true;$('dapplyb').textContent='Saving';
+  const r=await dapi('apply',{proposal:{summary:DPROP.summary,entities:out}});
+  $('dapplyb').disabled=false;$('dapplyb').textContent='Approve and save';
+  if(!r.ok){err($('derr2'),r.error||'Could not save.');return}
+  $('dpreview').classList.remove('on');
+  $('ddonelist').innerHTML=(r.done||[]).map(d=>'<li>'+esc(d)+'</li>').join('');
+  $('dapplied').classList.add('on');
+  DFILE=null;DPROP=null;$('dfilecard').classList.remove('on');$('dsay').value='';$('dfileinput').value='';
+  ADMIN=null;const p=await data('portfolio');if(p.ok)PF=p;
 }
 
 /* ---------------- boot ---------------- */
