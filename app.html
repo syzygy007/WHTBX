@@ -431,11 +431,39 @@ function viewStatements(){
     ((e.statements||[]).map(s=>'<div class="rowline"><span class="main">'+esc(s.period)+'</span><span class="right"><span class="sub">'+esc(s.name)+'</span><button class="linkbtn" onclick="fileClick()">View</button></span></div>').join('')||'<div class="rowline"><span class="sub">None posted yet</span></div>')+
   '</div>').join('');
 }
-function viewDocuments(){
-  $('view').innerHTML='<div class="phead"><h1>Documents.</h1></div>'+
-  PF.entities.map(e=>'<div class="sec"><div class="hd"><span class="t">'+esc(e.name)+'</span><span class="micro">'+esc(e.property.name||'')+'</span></div>'+
-    ((e.documents||[]).map(d=>'<div class="rowline"><span class="main">'+esc(d.kind)+'</span><span class="right"><span class="sub">'+esc(d.name)+'</span><button class="linkbtn" onclick="fileClick()">View</button></span></div>').join('')||'<div class="rowline"><span class="sub">None uploaded yet</span></div>')+
-  '</div>').join('');
+const SIGN_API='https://buyuqranpfaugchklqev.supabase.co/functions/v1/whtbx-sign';
+async function signFn(body){body.token=TOKEN;const r=await fetch(SIGN_API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});return r.json().catch(()=>({ok:false,error:'no answer'}))}
+function fmtBytes(n){n=Number(n||0);return n>1e6?(n/1e6).toFixed(1)+' MB':Math.max(1,Math.round(n/1e3))+' KB'}
+async function docOpen(id){const d=await signFn({action:'doc.link',id});if(d.ok&&d.url)window.open(d.url,'_blank');else alert(d.error||'Could not open that file.')}
+async function viewDocuments(){
+  const adm=ME.role==='admin'||ME.role==='superadmin';
+  const eName={};PF.entities.forEach(e=>{if(e.id)eName[e.id]=e.name});
+  const opts='<option value="">General (no entity)</option>'+PF.entities.map(e=>'<option value="'+esc(e.id||'')+'">'+esc(e.name)+'</option>').join('');
+  $('view').innerHTML='<div class="phead"><h1>Documents.</h1><span class="micro">Operating agreements, deeds, title, signed copies · stored private</span></div>'+
+    (adm?'<div class="sec"><div class="hd"><span class="t">Add a document</span></div><div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:10px;align-items:end;padding:14px 0">'+
+      '<div class="field"><label>File (up to 12MB)</label><input type="file" id="dfile"></div>'+
+      '<div class="field"><label>Entity</label><select id="dent">'+opts+'</select></div>'+
+      '<button class="btn" id="dup" type="button" style="height:44px;padding:0 22px">Upload</button></div><div class="msg" id="dmsg" style="font-size:13px;min-height:16px"></div></div>':'')+
+    '<div id="dochost"><div class="loading">Loading documents</div></div>';
+  if(adm){$('dup').onclick=async()=>{
+    const f=$('dfile').files[0];if(!f)return $('dmsg').textContent='Pick a file first.';
+    if(f.size>12*1024*1024)return $('dmsg').textContent='Files up to 12MB.';
+    $('dup').disabled=true;$('dmsg').textContent='Uploading';
+    const buf=await f.arrayBuffer();let s='';const u=new Uint8Array(buf);for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));
+    const d=await signFn({action:'doc.upload',file:btoa(s),name:f.name,content_type:f.type||'application/octet-stream',entity_id:$('dent').value||null,kind:'document'});
+    $('dup').disabled=false;
+    if(d.ok){$('dmsg').textContent='Saved.';drawDocs()}else $('dmsg').textContent=d.error||'That did not go through.';
+  };}
+  drawDocs();
+  async function drawDocs(){
+    const d=await signFn({action:'doc.list'});
+    const host=$('dochost');if(!d.ok){host.innerHTML='<div class="loading">'+esc(d.error||'Could not load')+'</div>';return}
+    if(!d.docs.length){host.innerHTML='<div class="sec"><div class="rowline"><span class="sub">Nothing on file yet. Signed copies land here on their own.</span></div></div>';return}
+    const groups={};d.docs.forEach(x=>{(groups[x.entity_id||'']=groups[x.entity_id||'']||[]).push(x)});
+    host.innerHTML=Object.keys(groups).map(k=>'<div class="sec"><div class="hd"><span class="t">'+esc(k?(eName[k]||'Entity'):'General')+'</span><span class="micro">'+groups[k].length+' on file</span></div>'+
+      groups[k].map(x=>'<div class="rowline"><span class="main">'+esc(x.name)+'</span><span class="right"><span class="sub">'+esc(x.kind||'')+' · '+fmtBytes(x.size_bytes)+' · '+esc(String(x.uploaded_at||'').slice(0,10))+'</span><button class="linkbtn" onclick="docOpen(\''+x.id+'\')">Open</button></span></div>').join('')+
+    '</div>').join('');
+  }
 }
 function monthKey(d){return String(d||'').slice(0,7)}
 function monthName(k){const [y,m]=k.split('-');const N=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return (N[Number(m)-1]||'')+' '+y}
