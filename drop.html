@@ -238,8 +238,14 @@ function paint(p){
     if(L){
       rows+=rowIf('Tenant',L.tenant);
       rows+=rowIf('Lease start',L.start_date);
+      rows+=rowIf('Lease end',L.end_date);
       rows+=L.base_rent?'<div class="row"><span class="k">Base rent</span><span class="v gold-v">'+money(L.base_rent)+'/mo'+(L.escalator_pct?' &middot; '+L.escalator_pct+'%/yr':'')+'</span></div>':'';
       rows+=rowIf('Actual rent billed',money(L.actual_rent)&&money(L.actual_rent)+'/mo');
+    }
+    const S=e.rent_schedule||[];
+    if(S.length){
+      rows+='<div class="row"><span class="k">Rent schedule</span><span class="v">'+S.length+' period'+(S.length>1?'s':'')+'</span></div>';
+      S.forEach(s=>{rows+='<div class="row"><span class="k">'+esc(s.start_date)+' &rarr; '+(s.end_date?esc(s.end_date):'open')+'</span><span class="v gold-v">'+money(s.monthly_rent)+'/mo</span></div>'});
     }
     (e.owners||[]).forEach(o=>{rows+='<div class="row"><span class="k">Owner</span><span class="v">'+esc(o.name||o.email||'')+' &middot; <span class="gold-v">'+esc(o.pct)+'%</span></span></div>'});
     const nameEl=e.match?'<span>'+esc(e.match)+'</span>':'<input class="nm-in" data-ix="'+ix+'" value="'+esc(e.entity_name||'')+'" placeholder="Entity (LLC) name" title="Click to rename before saving">';

@@ -37,6 +37,8 @@ button{font-family:inherit}
 .renerr{color:#E0A33B}
 .chip{display:inline-block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:5px 10px;border:1px solid var(--line);color:var(--dim)}
 .chip.amber{border-color:rgba(232,161,61,.5);color:var(--amber)}
+.chip.goldc{border-color:rgba(232,185,90,.55);color:var(--gold-hi);padding:3px 8px}
+.gold-t{color:var(--gold-hi)}
 .badge{display:inline-block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:4px 9px;border:1px solid var(--line);color:var(--dim)}
 .badge.ok{color:var(--txt)}
 .badge.warn{border-color:rgba(232,161,61,.55);color:var(--amber)}
@@ -302,12 +304,14 @@ function viewOverview(){
       '<div><div class="l">Equity</div><div class="v">'+money(e.equity)+'</div></div>'+
       '<div><div class="l">Your piece</div><div class="v gold">'+money(e.myEquity)+'</div></div>'+
     '</div>'+
-    (e.lease?'<div class="rentline"><span>'+esc(e.lease.tenant||'Lease')+' · rent per agreement '+money(r.expected)+'/mo'+(r.actual!=null?' · billing '+money(r.actual)+'/mo':'')+'</span>'+rentBadge(r)+'</div>':'')+
+    (e.lease?'<div class="rentline"><span>'+esc(e.lease.tenant||'Lease')+(r.expected!=null?' · rent per agreement '+money(r.expected)+'/mo':'')+(r.actual!=null?' · billing '+money(r.actual)+'/mo':'')+(r.upcoming?' · goes to '+money(r.upcoming.monthly_rent)+' on '+esc(r.upcoming.step_start):'')+'</span>'+rentBadge(r)+'</div>':'')+
     '</div>';
   }).join('');
 }
 function rentBadge(r){
-  if(!r||r.actual==null)return '<span class="badge">No actual set</span>';
+  if(!r||(r.expected==null&&r.actual==null))return '<span class="badge">No schedule</span>';
+  if(r.expected==null)return '<span class="badge">No agreement loaded</span>';
+  if(r.actual==null)return '<span class="badge">No billing set</span>';
   return r.ok?'<span class="badge ok">Matches agreement</span>':'<span class="badge warn">Check · off by '+money(Math.abs(r.actual-r.expected))+'</span>';
 }
 
@@ -367,13 +371,27 @@ async function viewAdmin(){
     ],'admin.add_property');
   }
   if(subtab==='lease'){
-    B.innerHTML='<div class="sec"><div class="hd"><span class="t">Rent vs agreement</span><span class="micro">expected = base rent escalated on each lease anniversary</span></div>'+
-      ADMIN.entities.map(e=>{const r=e.rent;return '<div class="rowline"><span><span class="main">'+esc(e.name)+'</span> <span class="sub">· '+esc(e.lease?e.lease.tenant||'':'no lease')+(e.lease?' · base '+money(e.lease.base_rent)+' · '+(e.lease.escalator_pct||0)+'%/yr':'')+'</span></span>'+
-        '<span class="right">'+(r?'<span class="sub">expected '+money(r.expected)+'</span><span class="sub">billing '+(r.actual==null?'·':money(r.actual))+'</span>':'')+rentBadge(r)+'</span></div>'}).join('')+
-    '</div>'+
-    formSec('Set the lease on a property','flease',[
+    const today=new Date().toISOString().slice(0,10);
+    B.innerHTML='<div class="sec"><div class="hd"><span class="t">Rent vs agreement</span><span class="micro">expected = the schedule period covering today</span></div></div>'+
+    ADMIN.entities.map(e=>{
+      const r=e.rent||{},L=e.lease,S=(L&&L.schedule)||[];
+      const head='<div class="hd"><span class="t">'+esc(e.name)+'</span><span style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><span class="sub">'+esc(L&&L.tenant?L.tenant:'no tenant set')+'</span>'+(r.expected!=null?'<span class="sub">expected '+money(r.expected)+'</span>':'')+'<span class="sub">billing '+(r.actual==null?'·':money(r.actual))+'</span>'+rentBadge(r)+'</span></div>';
+      const rows=S.length?S.map((s,i)=>{
+        const now=s.step_start<=today&&(!s.step_end||s.step_end>=today);
+        return '<div class="rowline"><span><span class="sub">Period '+(i+1)+'</span> <span class="main">'+esc(s.step_start)+' → '+(s.step_end?esc(s.step_end):'open')+'</span>'+(now?' <span class="chip goldc">Now</span>':'')+'</span><span class="right"><span class="'+(now?'gold-t':'')+'">'+money(s.monthly_rent)+'/mo</span>'+(SUPER?'<button class="linkbtn" data-del="step" data-id="'+esc(s.id)+'">Remove</button>':'')+'</span></div>';
+      }).join(''):'<div class="rowline"><span class="sub">No rent schedule loaded. Drop the lease or rent schedule on the Drop page, or add periods below.</span></div>'+
+        (L&&Number(L.base_rent)>0?'<div class="rowline"><span class="sub">Fallback: base '+money(L.base_rent)+' · '+(L.escalator_pct||0)+'%/yr</span></div>':'');
+      return '<div class="sec">'+head+rows+'</div>';
+    }).join('')+
+    formSec('Add a rent period','fstep',[
+      ['property_id','Property','select',propOpts],['step_start','First day','date'],['step_end','Last day (blank = open)','date'],['monthly_rent','Rent $/mo','number']
+    ],'admin.add_rent_step')+
+    formSec('Set what is actually billed','factual',[
+      ['property_id','Property','select',propOpts],['actual_rent','Billing $/mo (blank clears it)','number']
+    ],'admin.set_actual_rent')+
+    formSec('Set the lease (tenant and dates)','flease',[
       ['property_id','Property','select',propOpts],['tenant','Tenant','text'],['start_date','Lease start','date'],
-      ['base_rent','Base rent $/mo','number'],['escalator_pct','Escalator %/yr','number'],['actual_rent','Actual rent billed $/mo','number']
+      ['base_rent','Base rent $/mo (fallback if no schedule)','number'],['escalator_pct','Escalator %/yr (fallback)','number'],['actual_rent','Actual rent billed $/mo','number']
     ],'admin.add_lease');
   }
   if(subtab==='work'){
@@ -428,7 +446,7 @@ async function viewAdmin(){
   document.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',async()=>{
     if(!b.dataset.armed){b.dataset.armed='1';const t=b.textContent;b.textContent='Sure?';setTimeout(()=>{if(b.dataset){b.dataset.armed='';b.textContent=t}},2600);return}
     const kind=b.dataset.del;
-    const args=kind==='entity'?['admin.delete_entity',{entity_id:b.dataset.id}]:kind==='work'?['admin.delete_work',{work_id:b.dataset.id}]:kind==='owner'?['admin.delete_owner',{owner_email:b.dataset.id}]:['admin.remove_ownership',{entity_id:b.dataset.eid,owner_email:b.dataset.id}];
+    const args=kind==='entity'?['admin.delete_entity',{entity_id:b.dataset.id}]:kind==='work'?['admin.delete_work',{work_id:b.dataset.id}]:kind==='step'?['admin.delete_rent_step',{step_id:b.dataset.id}]:kind==='owner'?['admin.delete_owner',{owner_email:b.dataset.id}]:['admin.remove_ownership',{entity_id:b.dataset.eid,owner_email:b.dataset.id}];
     b.disabled=true;
     const r=await data(args[0],args[1]);
     if(r.ok){ADMIN=null;const p=await data('portfolio');if(p.ok)PF=p;viewAdmin()}
