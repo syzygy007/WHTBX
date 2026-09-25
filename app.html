@@ -31,6 +31,10 @@ button{font-family:inherit}
 .btn[disabled]{opacity:.45;cursor:default}
 .linkbtn{background:none;border:none;cursor:pointer;font-size:12px;color:var(--dim);padding:0;transition:.2s}
 .linkbtn:hover{color:var(--txt)}
+.linkbtn.gold-l{color:var(--gold-hi)}
+.renbox{display:flex;gap:12px;flex:1;flex-wrap:wrap}
+.ren-in{flex:1;min-width:160px;background:transparent;border:none;border-bottom:1px solid var(--gold);color:var(--txt);font:inherit;font-size:13px;padding:6px 2px;outline:none}
+.renerr{color:#E0A33B}
 .chip{display:inline-block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:5px 10px;border:1px solid var(--line);color:var(--dim)}
 .chip.amber{border-color:rgba(232,161,61,.5);color:var(--amber)}
 .badge{display:inline-block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:4px 9px;border:1px solid var(--line);color:var(--dim)}
@@ -210,6 +214,7 @@ const moneyM=n=>{n=Number(n||0);return n>=1e6?'$'+(n/1e6).toFixed(1)+'M':money(n
 let emailNow='', ME=null, PF=null, ADMIN=null, tab='overview', subtab='properties';
 
 const API='https://buyuqranpfaugchklqev.supabase.co/functions/v1/quick-endpoinportalt';
+const DROP_API='https://buyuqranpfaugchklqev.supabase.co/functions/v1/drop';
 let TOKEN=null; try{TOKEN=localStorage.getItem('whtbx_token')}catch(e){}
 function keep(t){TOKEN=t;try{if(t)localStorage.setItem('whtbx_token',t);else localStorage.removeItem('whtbx_token')}catch(e){}}
 async function api(action,body){
@@ -353,7 +358,7 @@ async function viewAdmin(){
   if(subtab==='properties'){
     B.innerHTML='<div class="sec"><div class="hd"><span class="t">Portfolio</span><span class="micro">'+ADMIN.entities.length+' entities</span></div>'+
       ADMIN.entities.map(e=>'<div class="rowline"><span><span class="main">'+esc(e.name)+'</span> <span class="sub">· '+esc(e.property.name||'')+' · '+esc(e.property.address||'')+'</span></span>'+
-      '<span class="right"><span class="sub">Value '+money(e.value)+'</span><span class="sub">Debt '+money(e.debt)+'</span>'+rentBadge(e.rent)+(SUPER?'<button class="linkbtn" data-del="entity" data-id="'+esc(e.id)+'">Remove</button>':'')+'</span></div>').join('')+
+      '<span class="right"><span class="sub">Value '+money(e.value)+'</span><span class="sub">Debt '+money(e.debt)+'</span>'+rentBadge(e.rent)+'<button class="linkbtn" data-ren="'+esc(e.id)+'" data-n="'+esc(e.name)+'" data-pn="'+esc(e.property.name||'')+'">Rename</button>'+(SUPER?'<button class="linkbtn" data-del="entity" data-id="'+esc(e.id)+'">Remove</button>':'')+'</span></div>').join('')+
     '</div>'+
     formSec('Add a property','fprop',[
       ['entity_name','Entity (LLC) name','text'],['name','Property name','text'],['address','Address','text'],
@@ -402,6 +407,23 @@ async function viewAdmin(){
     const ok=f.querySelector('.okmsg'),er=f.querySelector('.err');clr(er);ok.classList.remove('on');
     if(r.ok){ok.textContent='Saved.';ok.classList.add('on');f.reset();ADMIN=null;const p=await data('portfolio');if(p.ok)PF=p;viewAdmin()}
     else err(er,r.error||'Could not save.');
+  }));
+  document.querySelectorAll('[data-ren]').forEach(b=>b.addEventListener('click',()=>{
+    const row=b.closest('.rowline');
+    row.innerHTML='<span class="renbox"><input class="ren-in" id="rn1" value="'+esc(b.dataset.n)+'" placeholder="Entity (LLC) name"><input class="ren-in" id="rn2" value="'+esc(b.dataset.pn)+'" placeholder="Property name"></span>'+
+      '<span class="right"><span class="sub renerr" id="rnerr"></span><button class="linkbtn gold-l" id="rnsave">Save</button><button class="linkbtn" id="rncancel">Cancel</button></span>';
+    $('rn1').focus();$('rn1').select();
+    $('rncancel').addEventListener('click',()=>viewAdmin());
+    const save=async()=>{
+      const name=$('rn1').value.trim(),pn=$('rn2').value.trim();
+      if(!name){$('rnerr').textContent='Name cannot be empty';return}
+      $('rnsave').disabled=true;$('rnsave').textContent='Saving';
+      const r=await fetch(DROP_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'rename',token:TOKEN,entity_id:b.dataset.ren,name,property_name:pn||null})}).then(x=>x.json()).catch(()=>({ok:false}));
+      if(r.ok){ADMIN=null;const p=await data('portfolio');if(p.ok)PF=p;viewAdmin()}
+      else{$('rnsave').disabled=false;$('rnsave').textContent='Save';$('rnerr').textContent=r.error||'Could not rename'}
+    };
+    $('rnsave').addEventListener('click',save);
+    row.querySelectorAll('.ren-in').forEach(i=>i.addEventListener('keydown',ev=>{if(ev.key==='Enter')save();if(ev.key==='Escape')viewAdmin()}));
   }));
   document.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',async()=>{
     if(!b.dataset.armed){b.dataset.armed='1';const t=b.textContent;b.textContent='Sure?';setTimeout(()=>{if(b.dataset){b.dataset.armed='';b.textContent=t}},2600);return}
