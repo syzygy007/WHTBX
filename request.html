@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sign · WHTBX</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#101010">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#101010;--panel:#151412;--panel2:#1B1A17;--line:#2A2823;--txt:#EDEAE4;--dim:#98938B;--dim2:#6E6A63;--gold:#E8B95A;--gold-hi:#F0C46A;--gold-deep:#8A6A2F;--errc:#C97A6B;--font:'Space Grotesk',system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--font);padding-bottom:env(safe-area-inset-bottom)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+@media(max-width:720px){.wrap{padding:0 16px}}
+.nav{position:sticky;top:0;z-index:20;background:rgba(16,16,16,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.nav a{color:var(--txt);text-decoration:none;font-weight:700;letter-spacing:.34em;font-size:14px}
+.nav .who{font-size:11px;color:var(--dim2)}
+.micro{font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+.head{padding:40px 0 20px}
+.head h1{margin:12px 0 10px;font-weight:700;letter-spacing:-.03em;line-height:.95;font-size:clamp(32px,6.5vw,58px)}
+.head p{margin:0;max-width:60ch;color:var(--dim)}
+.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:28px;align-items:start;padding:22px 0 64px}
+.grid>*{min-width:0}
+@media(max-width:860px){.grid{grid-template-columns:1fr;gap:18px}}
+.pages{display:grid;gap:14px}
+.page{position:relative;border:1px solid var(--line);background:#fff}
+.page canvas{display:block;width:100%;height:auto}
+.page .n{position:absolute;top:8px;right:8px;font-size:10px;font-weight:600;letter-spacing:.1em;color:#777;background:#f2f0ec;padding:2px 6px;pointer-events:none}
+.f{position:absolute;border:2px solid var(--gold-deep);background:rgba(232,185,90,.22);display:flex;align-items:center;justify-content:center;font:600 11px/1 var(--font);letter-spacing:.08em;text-transform:uppercase;color:#111;pointer-events:none}
+.f.date,.f.name,.f.title{background:rgba(232,185,90,.3);text-transform:none;letter-spacing:0;font-weight:500;font-size:12px;justify-content:flex-start;padding-left:4px;overflow:hidden;white-space:nowrap}
+.f.sig{border-left-width:3px}
+.f img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.scard{border:1px solid var(--line);background:var(--panel);padding:22px;display:grid;gap:14px;position:sticky;top:80px}
+@media(max-width:860px){.scard{position:static}}
+.scard h2{margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em}
+.field{display:grid;gap:6px}
+.field label{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.field input{background:var(--panel2);border:1px solid var(--line);color:var(--txt);font:400 15px/1.3 var(--font);padding:11px 12px;outline:none}
+.field input:focus{border-color:var(--gold-deep)}
+.note{font-size:13px;line-height:1.5;color:var(--dim)}
+.tick{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.5}
+.tick input{width:20px;height:20px;flex:none;margin-top:2px;accent-color:var(--gold)}
+.padwrap{display:grid;gap:8px}
+.padlab{display:flex;align-items:baseline;justify-content:space-between;font-size:13px;font-weight:600}
+.padlab a{font-weight:600;color:var(--dim);cursor:pointer;text-decoration:underline;font-size:13px}
+.pad{position:relative;border:1px solid var(--line);background:#fff;touch-action:none}
+.pad canvas{display:block;width:100%;height:150px;cursor:crosshair}
+.pad .hint{position:absolute;left:20px;right:20px;bottom:24px;border-top:1px solid #ddd;text-align:center;pointer-events:none}
+.pad .hint span{display:inline-block;transform:translateY(10px);background:#fff;padding:0 10px;font-size:12px;color:#999}
+.pad.inked .hint{opacity:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;width:100%;height:54px;border:none;background:var(--gold);color:#151412;font:600 13px/1 var(--font);letter-spacing:.16em;text-transform:uppercase;cursor:pointer;text-decoration:none}
+.btn:hover{background:var(--gold-hi)}
+.btn[disabled]{opacity:.5;cursor:default}
+.msg{font-size:13px;min-height:18px}
+.msg.bad{color:var(--errc)}
+.ok{padding:26px;border:1px solid var(--line);background:var(--panel);display:grid;gap:14px;max-width:560px;margin:40px 0 64px}
+.ok b{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.loading{padding:80px 0;color:var(--dim)}
+</style>
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a href="index.html">WHTBX</a>
+  <span class="who">SIGN</span>
+</div></header>
+<main class="wrap">
+  <div class="loading" id="loading">Opening your document</div>
+  <div id="app" style="display:none">
+    <div class="head">
+      <div class="micro">Your signature is requested</div>
+      <h1 id="h1"></h1>
+      <p id="sub"></p>
+    </div>
+    <div class="grid">
+      <div class="pages" id="pages"></div>
+      <div class="scard">
+        <h2>Sign it.</h2>
+        <div class="field"><label for="name">Your full name</label><input id="name" autocomplete="name"></div>
+        <div class="field"><label for="title2">Title (optional)</label><input id="title2"></div>
+        <div class="padwrap">
+          <div class="padlab"><label for="pad">Your signature</label><a id="clear">Clear</a></div>
+          <div class="pad" id="padbox"><canvas id="pad"></canvas>
+            <div class="hint"><span>Sign here with your finger</span></div></div>
+        </div>
+        <label class="tick"><input type="checkbox" id="consent">
+          I agree to sign this electronically and this is my signature.</label>
+        <button class="btn" id="sign">Sign and finish</button>
+        <p class="note">Your signature lands on the highlighted spots. When everyone has signed, the finished copy is emailed to all parties. The record is kept, never the document.</p>
+        <div class="msg" id="msg"></div>
+      </div>
+    </div>
+  </div>
+  <div class="ok" id="done" style="display:none">
+    <b id="dtitle">Signed.</b>
+    <p class="note" id="dnote"></p>
+  </div>
+</main>
+
+<script type="module">
+import * as pdfjsLib from './pdf.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.mjs';
+const API = 'https://buyuqranpfaugchklqev.supabase.co/functions/v1/whtbx-sign';
+const $ = s => document.querySelector(s);
+const say = (t, bad) => { const e = $('#msg'); e.textContent = t || ''; e.className = 'msg' + (t && bad ? ' bad' : ''); };
+const T = new URLSearchParams(location.search).get('t') || '';
+let FIELDS = [], PDFB64 = '';
+async function fn(body){
+  const r = await fetch(API, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  return r.json().catch(() => ({ ok: false, error: 'no answer from the server' }));
+}
+function finish(title, note){
+  $('#loading').style.display = 'none'; $('#app').style.display = 'none';
+  $('#dtitle').textContent = title; $('#dnote').textContent = note; $('#done').style.display = '';
+}
+function today(){ return new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }); }
+function label(k){ return k === 'sig' ? 'Sign here' : k === 'date' ? today() : k === 'title' ? ($('#title2').value.trim() || 'Title') : ($('#name').value.trim() || 'Name'); }
+function relabel(){ document.querySelectorAll('.f.name, .f.title').forEach(d => { d.childNodes[0].textContent = label(d.classList.contains('title') ? 'title' : 'name'); }); }
+function paint(){
+  document.querySelectorAll('.f.sig').forEach(d => {
+    d.querySelectorAll('img').forEach(i => i.remove());
+    if(inked){ d.childNodes[0].textContent = ''; const i = new Image(); i.src = cv.toDataURL('image/png'); d.insertBefore(i, d.firstChild); }
+    else d.childNodes[0].textContent = 'Sign here';
+  });
+}
+async function boot(){
+  if(!T) return finish('That link is not right.', 'Open the signing link from your email again.');
+  const d = await fn({ action: 'req.get', t: T });
+  if(!d.ok) return finish('That link did not work.', d.error || 'Ask for a fresh signing link.');
+  if(d.done) return finish('Already signed.', d.all ? 'Everyone has signed ' + d.document_name + '. The finished copy was emailed to all parties.' : 'You already signed ' + d.document_name + '. Copies go out when everyone has signed.');
+  PDFB64 = d.pdf; FIELDS = d.fields || [];
+  $('#h1').textContent = (d.document_name || 'Document').replace(/\.pdf$/i, '') + '.';
+  $('#sub').textContent = d.message ? d.message : 'Check the highlighted spots, then sign once below.';
+  if(d.name) $('#name').value = d.name;
+  const bin = atob(PDFB64), u = new Uint8Array(bin.length); for(let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+  const pdf = await pdfjsLib.getDocument({ data: u }).promise;
+  const host = $('#pages');
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  $('#loading').style.display = 'none'; $('#app').style.display = '';
+  const w = Math.min(host.getBoundingClientRect().width || 600, 900);
+  for(let p = 1; p <= pdf.numPages; p++){
+    const page = await pdf.getPage(p);
+    const v1 = page.getViewport({ scale: 1 });
+    const vp = page.getViewport({ scale: (w / v1.width) * DPR });
+    const c = document.createElement('canvas'); c.width = vp.width; c.height = vp.height;
+    await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+    const box = document.createElement('div'); box.className = 'page';
+    box.appendChild(c);
+    const n = document.createElement('span'); n.className = 'n'; n.textContent = 'PAGE ' + p + ' OF ' + pdf.numPages; box.appendChild(n);
+    host.appendChild(box);
+    for(const f of FIELDS.filter(q => q.page === p)){
+      const dv = document.createElement('div'); dv.className = 'f ' + f.kind;
+      dv.style.left = (f.x * 100) + '%'; dv.style.top = (f.y * 100) + '%'; dv.style.width = (f.w * 100) + '%'; dv.style.height = (f.h * 100) + '%';
+      dv.textContent = label(f.kind);
+      box.appendChild(dv);
+    }
+  }
+  relabel(); fit();
+}
+$('#name').addEventListener('input', relabel); $('#title2').addEventListener('input', relabel);
+
+/* pad */
+const cv = $('#pad'), cx = cv.getContext('2d');
+let inked = false, drawing = false, box = null, DPR = 1;
+function fit(){
+  const keep = inked ? cv.toDataURL('image/png') : null;
+  DPR = Math.min(window.devicePixelRatio || 1, 3);
+  const r = cv.getBoundingClientRect(); if(!r.width) return;
+  cv.width = Math.round(r.width * DPR); cv.height = Math.round(r.height * DPR);
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  cx.lineWidth = 2.4; cx.lineCap = 'round'; cx.lineJoin = 'round'; cx.strokeStyle = '#000';
+  if(keep){ const i = new Image(); i.onload = () => cx.drawImage(i, 0, 0, r.width, r.height); i.src = keep; }
+}
+function at(e){ const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+function mark(p){
+  if(!box) box = { x1: p.x, y1: p.y, x2: p.x, y2: p.y };
+  box.x1 = Math.min(box.x1, p.x); box.y1 = Math.min(box.y1, p.y);
+  box.x2 = Math.max(box.x2, p.x); box.y2 = Math.max(box.y2, p.y);
+}
+cv.addEventListener('pointerdown', e => { e.preventDefault(); cv.setPointerCapture(e.pointerId);
+  drawing = true; const p = at(e); cx.beginPath(); cx.moveTo(p.x, p.y); cx.lineTo(p.x + 0.1, p.y); cx.stroke();
+  mark(p); inked = true; $('#padbox').classList.add('inked'); say(''); });
+cv.addEventListener('pointermove', e => { if(!drawing) return; e.preventDefault();
+  const p = at(e); cx.lineTo(p.x, p.y); cx.stroke(); mark(p); });
+['pointerup','pointercancel','pointerleave'].forEach(k => cv.addEventListener(k, () => { if(drawing){ drawing = false; paint(); } }));
+$('#clear').onclick = () => { cx.clearRect(0, 0, cv.width, cv.height); inked = false; box = null;
+  $('#padbox').classList.remove('inked'); paint(); say(''); };
+window.addEventListener('resize', fit);
+function signature(){
+  if(!inked || !box) return '';
+  const pad = 8, r = cv.getBoundingClientRect();
+  const x = Math.max(0, box.x1 - pad), y = Math.max(0, box.y1 - pad);
+  const w = Math.min(r.width - x, (box.x2 - box.x1) + pad * 2);
+  const h = Math.min(r.height - y, (box.y2 - box.y1) + pad * 2);
+  const out = document.createElement('canvas');
+  out.width = Math.max(1, Math.round(w * DPR)); out.height = Math.max(1, Math.round(h * DPR));
+  out.getContext('2d').drawImage(cv, Math.round(x * DPR), Math.round(y * DPR), out.width, out.height, 0, 0, out.width, out.height);
+  return out.toDataURL('image/png');
+}
+$('#sign').onclick = async () => {
+  if(!$('#name').value.trim()) return say('Type your full name.', true);
+  if(!inked) return say('Sign in the box.', true);
+  if(!$('#consent').checked) return say('Tick the box, that is the part that counts.', true);
+  const btn = $('#sign'); btn.disabled = true; btn.textContent = 'Signing';
+  try{
+    const d = await fn({ action: 'req.sign', t: T, sig: signature(), name: $('#name').value.trim(), title: $('#title2').value.trim(), consent: true });
+    if(!d.ok) throw new Error(d.error || 'That did not go through.');
+    if(d.all) finish('Signed.', 'Everyone has signed. The finished copy with signature ID WHTBX ' + (d.sig_id || '') + ' is on its way to all parties by email.');
+    else finish('Signed.', 'Thank you. ' + (d.waiting || '') + ' more signature' + (d.waiting === 1 ? '' : 's') + ' to go. When everyone has signed, the finished copy is emailed to all parties.');
+  }catch(e){ btn.disabled = false; btn.textContent = 'Sign and finish'; say(e.message, true); }
+};
+boot();
+</script>
+</body>
+</html>
