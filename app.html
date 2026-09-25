@@ -473,6 +473,7 @@ function planRentMonth(e,y,m){
     if(L.start_date){const st=new Date(L.start_date+'T00:00:00Z'),now=new Date(d+'T00:00:00Z');if(now<st)return 0;yrs=now.getUTCFullYear()-st.getUTCFullYear();const anniv=new Date(Date.UTC(now.getUTCFullYear(),st.getUTCMonth(),st.getUTCDate()));if(now<anniv)yrs-=1;if(yrs<0)yrs=0}
     return Math.round(Number(L.base_rent)*Math.pow(1+Number(L.escalator_pct||0)/100,yrs)*100)/100;
   }
+  if(L.actual_rent!=null)return Number(L.actual_rent);
   return 0;
 }
 function planYearRent(e,y){let t=0;for(let m=1;m<=12;m++)t+=planRentMonth(e,y,m);return t}
@@ -511,7 +512,7 @@ function viewPlan(){
     rows.map(r=>'<div class="rowline"><span><span class="main">'+esc(r.e.name)+'</span> <span class="sub">· '+(r.price?'basis '+money(Math.round(r.basis)):'no purchase price on file')+'</span></span><span class="right"><span class="sub">rent '+money(Math.round(r.rent))+'</span><span class="sub">dep '+money(Math.round(r.dep))+'</span><span class="sub">int '+money(Math.round(r.intr))+'</span></span></div>').join('')+
     '<div class="rowline"><span class="main">Combined</span><span class="right"><span class="sub">rent '+money(Math.round(t.rent))+'</span><span class="sub">dep '+money(Math.round(t.dep))+'</span><span class="sub">int '+money(Math.round(t.int))+'</span><span class="gold-t">'+money(Math.round(taxable))+' taxable</span></span></div>'+
   '</div>'+
-  '<div class="sec"><div class="hd"><span class="t">Rent plan · next five years</span><span class="micro">from the loaded schedules and escalators</span></div>'+
+  '<div class="sec"><div class="hd"><span class="t">Rent plan · next five years</span><span class="micro">from the loaded schedules · no schedule = current billing held flat</span></div>'+
     '<div class="rowline"><span class="sub">Year</span><span class="right">'+years.map(y=>'<span class="sub" style="min-width:86px;text-align:right">'+y+'</span>').join('')+'</span></div>'+
     sel.map(e=>'<div class="rowline"><span class="main">'+esc(e.name)+'</span><span class="right">'+years.map(y=>'<span class="sub" style="min-width:86px;text-align:right">'+money(Math.round(planYearRent(e,y)))+'</span>').join('')+'</span></div>').join('')+
     '<div class="rowline"><span class="main">Total</span><span class="right">'+years.map(y=>'<span class="gold-t" style="min-width:86px;text-align:right">'+money(Math.round(sel.reduce((s,e)=>s+planYearRent(e,y),0)))+'</span>').join('')+'</span></div>'+
