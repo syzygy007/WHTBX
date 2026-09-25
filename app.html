@@ -327,8 +327,8 @@ function enter(owner){
   const tabs=stf?[['overview','Properties'],['activity','Work Log']]:[['overview','Overview'],['statements','Statements'],['documents','Documents'],['activity','Activity']];
   const adm=owner.role==='admin'||owner.role==='superadmin';
   if(adm)tabs.push(['plan','Planner'],['books','Books'],['admin','Admin'],['drop','Drop']);
-  $('tabs').innerHTML=tabs.map(t=>'<button data-t="'+t[0]+'">'+t[1]+'</button>').join('');
-  $('tabs').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.t;paint()}));
+  $('tabs').innerHTML=tabs.map(t=>'<button data-t="'+t[0]+'">'+t[1]+'</button>').join('')+'<button data-t="_sign">Sign</button>';
+  $('tabs').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.t==='_sign'){location.href='sign.html';return}tab=b.dataset.t;paint()}));
   if(adm&&location.hash==='#drop')tab='drop';
   document.title='WHTBX · Portal';
   load();
