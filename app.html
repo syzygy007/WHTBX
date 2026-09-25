@@ -39,6 +39,7 @@ button{font-family:inherit}
 .chip.amber{border-color:rgba(232,161,61,.5);color:var(--amber)}
 .chip.goldc{border-color:rgba(232,185,90,.55);color:var(--gold-hi);padding:3px 8px}
 .gold-t{color:var(--gold-hi)}
+.pick{width:16px;height:16px;accent-color:var(--gold);cursor:pointer;flex:none}
 .badge{display:inline-block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:4px 9px;border:1px solid var(--line);color:var(--dim)}
 .badge.ok{color:var(--txt)}
 .badge.warn{border-color:rgba(232,161,61,.55);color:var(--amber)}
@@ -360,8 +361,10 @@ async function viewAdmin(){
   const propOpts=props.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.label)+'</option>').join('');
 
   if(subtab==='properties'){
-    B.innerHTML='<div class="sec"><div class="hd"><span class="t">Portfolio</span><span class="micro">'+ADMIN.entities.length+' entities</span></div>'+
-      ADMIN.entities.map(e=>'<div class="rowline"><span><span class="main">'+esc(e.name)+'</span> <span class="sub">· '+esc(e.property.name||'')+' · '+esc(e.property.address||'')+'</span></span>'+
+    B.innerHTML='<div class="sec"><div class="hd"><span class="t">Portfolio</span><span style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">'+
+      (SUPER?'<button class="linkbtn" id="selall" type="button">Select all</button><button class="btn gold" id="delsel" type="button" style="display:none;padding:8px 18px;font-size:12px"></button>':'')+
+      '<span class="micro">'+ADMIN.entities.length+' entities</span></span></div>'+
+      ADMIN.entities.map(e=>'<div class="rowline"><span style="display:flex;align-items:center;gap:14px;min-width:0">'+(SUPER?'<input type="checkbox" class="pick" data-id="'+esc(e.id)+'">':'')+'<span><span class="main">'+esc(e.name)+'</span> <span class="sub">· '+esc(e.property.name||'')+' · '+esc(e.property.address||'')+'</span></span></span>'+
       '<span class="right"><span class="sub">Value '+money(e.value)+'</span><span class="sub">Debt '+money(e.debt)+'</span>'+rentBadge(e.rent)+'<button class="linkbtn" data-ren="'+esc(e.id)+'" data-n="'+esc(e.name)+'" data-pn="'+esc(e.property.name||'')+'">Rename</button>'+(SUPER?'<button class="linkbtn" data-del="entity" data-id="'+esc(e.id)+'">Remove</button>':'')+'</span></div>').join('')+
     '</div>'+
     formSec('Add a property','fprop',[
@@ -369,6 +372,24 @@ async function viewAdmin(){
       ['purchase_price','Purchase price $','number'],['purchase_date','Purchase date','date'],['current_value','Current value $','number'],
       ['mortgage_amount','Mortgage amount $','number'],['lender','Lender','text']
     ],'admin.add_property');
+    if(SUPER){
+      const updSel=()=>{const n=document.querySelectorAll('.pick:checked').length;const b=$('delsel');if(!b)return;b.style.display=n?'':'none';b.dataset.armed='';b.disabled=false;b.textContent='Remove selected · '+n;};
+      document.querySelectorAll('.pick').forEach(c=>c.addEventListener('change',updSel));
+      $('selall').addEventListener('click',()=>{const all=[...document.querySelectorAll('.pick')];const on=all.every(c=>c.checked);all.forEach(c=>{c.checked=!on});updSel()});
+      $('delsel').addEventListener('click',async()=>{
+        const ids=[...document.querySelectorAll('.pick:checked')].map(c=>c.dataset.id);
+        if(!ids.length)return;
+        const b=$('delsel');
+        if(!b.dataset.armed){b.dataset.armed='1';b.textContent='Sure? Deletes '+ids.length+' with all their records';setTimeout(()=>{if(b.dataset&&b.dataset.armed&&!b.disabled)updSel()},4000);return}
+        b.disabled=true;
+        for(let i=0;i<ids.length;i++){
+          b.textContent='Removing '+(i+1)+' of '+ids.length;
+          const r=await data('admin.delete_entity',{entity_id:ids[i]});
+          if(!r.ok){b.textContent=r.error||'Failed';return}
+        }
+        ADMIN=null;const p=await data('portfolio');if(p.ok)PF=p;viewAdmin();
+      });
+    }
   }
   if(subtab==='lease'){
     const today=new Date().toISOString().slice(0,10);
