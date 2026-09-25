@@ -67,6 +67,24 @@ body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--font);padd
 .f .rz{position:absolute;right:-7px;bottom:-7px;width:16px;height:16px;border-radius:50%;background:var(--gold);border:2px solid #fff;cursor:nwse-resize;touch-action:none}
 .f img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 .f .x{position:absolute;top:-12px;right:-12px;width:24px;height:24px;border-radius:50%;background:#000;color:#fff;font-size:13px;line-height:24px;text-align:center;cursor:pointer}
+.f.c1{border-color:#7FA8D8}.f.c1 .rz{background:#7FA8D8}
+.f.c2{border-color:#8FBF8A}.f.c2 .rz{background:#8FBF8A}
+.f.c3{border-color:#E8A13D}.f.c3 .rz{background:#E8A13D}
+.f.c4{border-color:#B89BD8}.f.c4 .rz{background:#B89BD8}
+.mode.sgr{border-color:var(--gold-deep)}
+.mode.sgr.c1{border-color:#7FA8D8}.mode.sgr.c1.on{background:#7FA8D8;border-color:#7FA8D8}
+.mode.sgr.c2{border-color:#8FBF8A}.mode.sgr.c2.on{background:#8FBF8A;border-color:#8FBF8A}
+.mode.sgr.c3{border-color:#E8A13D}.mode.sgr.c3.on{background:#E8A13D;border-color:#E8A13D}
+.mode.sgr.c4{border-color:#B89BD8}.mode.sgr.c4.on{background:#B89BD8;border-color:#B89BD8}
+.swtch{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.swtch button{height:44px;border:1px solid var(--line);background:none;color:var(--txt);font:600 12px/1 var(--font);letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.swtch button.on{background:var(--gold);border-color:var(--gold);color:#151412}
+.srow{display:grid;grid-template-columns:16px minmax(0,1fr) minmax(0,1.2fr) 24px;gap:8px;align-items:center}
+.srow .dot{width:12px;height:12px;border-radius:50%}
+.srow input{background:var(--panel2);border:1px solid var(--line);color:var(--txt);font:400 13px/1.3 var(--font);padding:9px 10px;outline:none;min-width:0}
+.srow .x2{width:24px;height:24px;border-radius:50%;background:#000;color:#fff;border:none;font-size:13px;cursor:pointer}
+.addlnk{font-size:13px;font-weight:600;color:var(--gold-hi);cursor:pointer;text-decoration:underline;justify-self:start}
+textarea#rmsg{background:var(--panel2);border:1px solid var(--line);color:var(--txt);font:400 14px/1.4 var(--font);padding:11px 12px;outline:none;min-height:64px;resize:vertical}
 .scard{border:1px solid var(--line);background:var(--panel);padding:22px;display:grid;gap:14px;position:sticky;top:120px}
 @media(max-width:860px){.scard{position:static}}
 .scard h2{margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em}
@@ -140,11 +158,14 @@ body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--font);padd
         <button class="mode" data-mode="title">Title</button>
         <button class="mode" data-mode="company">Company</button>
         <span class="sp"></span>
+        <span id="placing" style="display:none;gap:6px;align-items:center" class="l"></span>
         <span class="cnt" id="cnt">No fields yet</span>
       </div>
       <div class="grid">
         <div class="pages" id="pages"></div>
         <div class="scard">
+          <div class="swtch"><button id="wme" class="on" type="button">I sign it</button><button id="wsend" type="button">Send to others</button></div>
+          <div id="selfcard" style="display:grid;gap:14px">
           <h2>Sign it.</h2>
           <div class="field"><label for="name">Your full name</label><input id="name" autocomplete="name"></div>
           <div class="field"><label for="title2">Title (optional)</label><input id="title2"></div>
@@ -159,6 +180,15 @@ body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--font);padd
             I agree to sign this electronically and this is my signature.</label>
           <button class="btn" id="sign">Sign and send</button>
           <p class="note">The signed PDF is emailed to you. Every page and your signature carry a WHTBX ID that anyone can verify. WHTBX keeps the signing record (document name, time, ID, hash), never the document.</p>
+          </div>
+          <div id="sendcard" style="display:none;gap:14px">
+          <h2>Send it.</h2>
+          <p class="note" style="margin:0">Add each signer, then tap the pages to place their spots. Each person gets an emailed link and signs on their phone. When the last one signs, everyone gets the finished copy and it files under Documents.</p>
+          <div id="slist" style="display:grid;gap:10px"></div>
+          <a class="addlnk" id="sadd">+ Add a signer</a>
+          <div class="field"><label for="rmsg">Note to the signers (optional)</label><textarea id="rmsg"></textarea></div>
+          <button class="btn" id="sendreq">Send for signatures</button>
+          </div>
           <div class="msg" id="msg"></div>
         </div>
       </div>
@@ -207,7 +237,76 @@ function ready(owner){
 
 /* ---------- the document ---------- */
 let BUF = null, FILE = '', PAGES = [], FIELDS = [], MODE = 'sig';
+let SEND = false, SIGNERS = [{ name: '', email: '' }], ACTIVE = 0;
+const SCOL = ['', 'c1', 'c2', 'c3', 'c4'];
+const SDOT = ['#E8B95A', '#7FA8D8', '#8FBF8A', '#E8A13D', '#B89BD8'];
 const SIZE = { sig: [0.2, 0.045], date: [0.12, 0.022], name: [0.2, 0.022], title: [0.2, 0.022], company: [0.26, 0.022] };
+function sname(i){ return (SIGNERS[i] && SIGNERS[i].name.trim()) || 'Signer ' + (i + 1); }
+function drawSigners(){
+  const host = $('#slist'); host.innerHTML = '';
+  SIGNERS.forEach((s, i) => {
+    const row = document.createElement('div'); row.className = 'srow';
+    const dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = SDOT[i % 5]; row.appendChild(dot);
+    const nm = document.createElement('input'); nm.placeholder = 'Name'; nm.value = s.name;
+    nm.oninput = () => { s.name = nm.value; drawPlacing(); refreshTags(); }; row.appendChild(nm);
+    const em = document.createElement('input'); em.placeholder = 'Email'; em.type = 'email'; em.value = s.email;
+    em.oninput = () => { s.email = em.value; }; row.appendChild(em);
+    const x = document.createElement('button'); x.className = 'x2'; x.type = 'button'; x.textContent = 'x';
+    x.onclick = () => { if(SIGNERS.length === 1) return; SIGNERS.splice(i, 1); FIELDS = FIELDS.filter(f => (f.signer || 0) !== i); FIELDS.forEach(f => { if((f.signer || 0) > i) f.signer--; }); if(ACTIVE >= SIGNERS.length) ACTIVE = 0; redrawFields(); drawSigners(); drawPlacing(); count(); };
+    row.appendChild(x); host.appendChild(row);
+  });
+}
+function drawPlacing(){
+  const el = $('#placing');
+  if(!SEND){ el.style.display = 'none'; return; }
+  el.style.display = 'inline-flex';
+  el.innerHTML = 'Placing for';
+  SIGNERS.forEach((s, i) => {
+    const b = document.createElement('button'); b.className = 'mode sgr ' + (SCOL[i % 5] || '') + (i === ACTIVE ? ' on' : '');
+    b.textContent = sname(i); b.onclick = () => { ACTIVE = i; drawPlacing(); };
+    el.appendChild(b);
+  });
+}
+function refreshTags(){
+  document.querySelectorAll('.f.sig .uid').forEach(u => {
+    const id = u.parentElement.dataset.id, f = FIELDS.find(q => q.id === id);
+    u.textContent = SEND && f ? sname(f.signer || 0) : 'WHTBX ID on signing';
+  });
+}
+function redrawFields(){
+  document.querySelectorAll('.f').forEach(d => d.remove());
+  FIELDS.forEach(f => { const pg = PAGES[f.page - 1]; if(pg) draw(f, pg); });
+}
+function setSend(on){
+  SEND = on;
+  $('#wme').classList.toggle('on', !on); $('#wsend').classList.toggle('on', on);
+  $('#selfcard').style.display = on ? 'none' : 'grid'; $('#sendcard').style.display = on ? 'grid' : 'none';
+  FIELDS.forEach(f => { if(f.signer == null) f.signer = 0; });
+  if(on) drawSigners();
+  drawPlacing(); redrawFields(); say('');
+}
+$('#wme').onclick = () => setSend(false);
+$('#wsend').onclick = () => setSend(true);
+$('#sadd').onclick = () => { if(SIGNERS.length >= 10) return; SIGNERS.push({ name: '', email: '' }); ACTIVE = SIGNERS.length - 1; drawSigners(); drawPlacing(); };
+$('#sendreq').onclick = async () => {
+  if(FIELDS.some(f => f.kind === 'company')) return say('Remove the Company boxes first, those are for signing it yourself.', true);
+  if(SIGNERS.some(s => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(s.email.trim()))) return say('Every signer needs a working email.', true);
+  for(let i = 0; i < SIGNERS.length; i++){ if(!FIELDS.some(f => (f.signer || 0) === i && f.kind === 'sig')) return say(sname(i) + ' has no signature spot yet. Pick them above and tap the page.', true); }
+  if(BUF.byteLength > 12 * 1024 * 1024) return say('That PDF is over 12MB. Compress it first.', true);
+  const btn = $('#sendreq'); btn.disabled = true; btn.textContent = 'Sending';
+  try{
+    const d = await fetch(API + '/whtbx-sign', { method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ action: 'req.create', token: TOKEN, pdf: b64(BUF), filename: FILE, message: $('#rmsg').value.trim(),
+        signers: SIGNERS.map(s => ({ name: s.name.trim(), email: s.email.trim() })),
+        fields: FIELDS.map(f => ({ signer: f.signer || 0, page: f.page, kind: f.kind, x: f.x, y: f.y, w: f.w, h: f.h })) }) }).then(r => r.json()).catch(() => ({ ok: false, error: 'no answer from the server' }));
+    if(!d.ok) throw new Error(d.error || 'That did not go through.');
+    $('#work').style.display = 'none';
+    $('#h1').textContent = 'Sent.'; $('#sub').textContent = '';
+    $('#dnote').textContent = 'Signature requests for ' + FILE + ' are on their way to ' + SIGNERS.map(s => s.name.trim() || s.email.trim()).join(', ') + '. When the last one signs, everyone gets the finished copy by email and it files under Documents.';
+    $('#dlink').style.display = 'none';
+    step(3); $('#done').querySelector('b').textContent = 'Sent.'; $('#done').style.display = ''; window.scrollTo({ top: 0, behavior: 'smooth' });
+  }catch(e){ btn.disabled = false; btn.textContent = 'Send for signatures'; say(e.message, true); }
+};
 
 $('#pick').onclick = () => $('#file').click();
 $('#file').onchange = e => { if(e.target.files[0]) openPdf(e.target.files[0]); };
@@ -269,15 +368,17 @@ function place(ev, box, p){
   let fx = (ev.clientX - r.left) / r.width - fw / 2, fy = (ev.clientY - r.top) / r.height - fh / 2;
   fx = Math.max(0, Math.min(1 - fw, fx)); fy = Math.max(0, Math.min(1 - fh, fy));
   const f = { page: p, kind: MODE, x: fx, y: fy, w: fw, h: fh, id: Math.random().toString(36).slice(2) };
+  if(SEND) f.signer = ACTIVE;
   FIELDS.push(f); draw(f, box); count();
 }
 function draw(f, pg){
   const d = document.createElement('div'); d.className = 'f ' + f.kind; d.dataset.id = f.id;
+  if(SEND) d.classList.add(SCOL[(f.signer || 0) % 5] || 'c0');
   d.style.left = (f.x * 100) + '%'; d.style.top = (f.y * 100) + '%'; d.style.width = (f.w * 100) + '%'; d.style.height = (f.h * 100) + '%';
   d.textContent = label(f.kind);
-  if(f.kind === 'sig'){ if(inked){ d.childNodes[0].textContent = ''; const i = new Image(); i.src = cv.toDataURL('image/png'); d.appendChild(i); }
+  if(f.kind === 'sig'){ if(!SEND && inked){ d.childNodes[0].textContent = ''; const i = new Image(); i.src = cv.toDataURL('image/png'); d.appendChild(i); }
     const t = document.createElement('span'); t.className = 'tag'; t.textContent = 'Signed by:'; d.appendChild(t);
-    const u = document.createElement('span'); u.className = 'uid'; u.textContent = 'WHTBX ID on signing'; d.appendChild(u); }
+    const u = document.createElement('span'); u.className = 'uid'; u.textContent = SEND ? sname(f.signer || 0) : 'WHTBX ID on signing'; d.appendChild(u); }
   const x = document.createElement('span'); x.className = 'x'; x.textContent = 'x';
   x.onclick = e => { e.stopPropagation(); FIELDS = FIELDS.filter(q => q.id !== f.id); d.remove(); count(); };
   const rz = document.createElement('span'); rz.className = 'rz';
