@@ -314,7 +314,8 @@ function enter(owner){
   ME=owner;
   $('gate').style.display='none';$('portal').style.display='block';
   $('who').textContent=owner.email||'';
-  const tabs=[['overview','Overview'],['statements','Statements'],['documents','Documents'],['activity','Activity']];
+  const stf=owner.role==='staff';
+  const tabs=stf?[['overview','Properties'],['activity','Work Log']]:[['overview','Overview'],['statements','Statements'],['documents','Documents'],['activity','Activity']];
   const adm=owner.role==='admin'||owner.role==='superadmin';
   if(adm)tabs.push(['admin','Admin'],['drop','Drop']);
   $('tabs').innerHTML=tabs.map(t=>'<button data-t="'+t[0]+'">'+t[1]+'</button>').join('');
@@ -345,6 +346,7 @@ const greet=()=>{const h=new Date().getHours();return h<12?'Good morning':h<17?'
 let OFILT=null;
 const SEGC=['#7A6647','#5A4E3B','#8C7355','#494136','#6B5A44','#3E382F'];
 function viewOverview(){
+  if(ME.role==='staff')return viewStaffProps();
   const owners={};PF.entities.forEach(e=>(e.partners||[]).forEach(p=>{if(p.email)owners[p.email]=p.name||p.email}));
   if(OFILT&&!owners[OFILT])OFILT=null;
   const list=OFILT?PF.entities.filter(e=>(e.partners||[]).some(p=>p.email===OFILT)):PF.entities;
@@ -392,6 +394,17 @@ function viewOverview(){
   }).join('');
   document.querySelectorAll('.ofilter button').forEach(b=>b.addEventListener('click',()=>{OFILT=b.dataset.of||null;viewOverview()}));
 }
+function viewStaffProps(){
+  $('view').innerHTML=
+  '<div class="phead"><h1>'+greet()+', '+esc((ME.name||'').split(' ')[0])+'.</h1><span class="micro">'+PF.entities.length+' properties</span></div>'+
+  PF.entities.map(e=>{
+    const wk=e.work||[];
+    return '<div class="ecard">'+
+    '<div class="top"><div class="nm">'+esc(e.property.name||e.name)+'</div><div class="addr">'+esc(e.property.address||'')+'</div></div>'+
+    (wk.length?'<div class="rentline"><span>Last work · '+esc(wk[0].description||'')+' · '+esc(wk[0].work_date||'')+'</span><span class="badge">'+wk.length+' logged</span></div>':'<div class="rentline"><span class="sub">No work logged yet</span></div>')+
+    '</div>';
+  }).join('');
+}
 function rentBadge(r){
   if(!r||(r.expected==null&&r.actual==null))return '<span class="badge">No schedule</span>';
   if(r.expected==null)return '<span class="badge">No agreement loaded</span>';
@@ -416,7 +429,13 @@ function viewDocuments(){
 function monthKey(d){return String(d||'').slice(0,7)}
 function monthName(k){const [y,m]=k.split('-');const N=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return (N[Number(m)-1]||'')+' '+y}
 function viewActivity(){
-  $('view').innerHTML='<div class="phead"><h1>Activity.</h1><span class="micro">Work on the properties · monthly summary</span></div>'+
+  const stf=ME.role==='staff';
+  const propOpts=PF.entities.map(e=>'<option value="'+esc(e.property.id||'')+'">'+esc(e.property.name||e.name)+'</option>').join('');
+  $('view').innerHTML='<div class="phead"><h1>'+(stf?'Work log.':'Activity.')+'</h1><span class="micro">Work on the properties · monthly summary</span></div>'+
+  (stf?formSec('Log work you did','fswork',[
+    ['property_id','Property','select',propOpts],['work_date','Date','date'],['vendor','Vendor (blank = you)','text'],
+    ['cost','Cost $','number'],['description','What was done','text','',true]
+  ],'work.add'):'')+
   PF.entities.map(e=>{
     const byM={};(e.work||[]).forEach(w=>{(byM[monthKey(w.work_date)]=byM[monthKey(w.work_date)]||[]).push(w)});
     const months=Object.keys(byM).sort().reverse();
@@ -428,6 +447,17 @@ function viewActivity(){
       }).join('')||'<div class="rowline"><span class="sub">No work logged</span></div>')+
     '</div>';
   }).join('');
+  const f=$('fswork');
+  if(f)f.addEventListener('submit',async ev=>{
+    ev.preventDefault();
+    const payload={};new FormData(f).forEach((v,k)=>{if(v!=='')payload[k]=v});
+    const btn=f.querySelector('.btn');btn.disabled=true;
+    const r=await data(f.dataset.action,payload);
+    btn.disabled=false;
+    const ok=f.querySelector('.okmsg'),er=f.querySelector('.err');clr(er);ok.classList.remove('on');
+    if(r.ok){ok.textContent='Logged.';ok.classList.add('on');f.reset();const p=await data('portfolio');if(p.ok)PF=p;viewActivity()}
+    else err(er,r.error||'Could not save.');
+  });
 }
 
 /* ---------------- admin ---------------- */
@@ -517,7 +547,7 @@ async function viewAdmin(){
         ((e.partners&&e.partners.length)?e.partners.map(p=>'<span class="chip">'+esc(p.name||p.email)+' · '+p.pct+'%'+(SUPER?' <button class="linkbtn" data-del="access" data-id="'+esc(p.email)+'" data-eid="'+esc(e.id)+'">×</button>':'')+'</span>').join(''):'<span class="sub">No one assigned</span>')+
       '</span></div>').join('')||'<div class="rowline"><span class="sub">No entities yet</span></div>')+
     '</div>'+
-    (SUPER?formSec('Create an account','fowner',[['name','Name','text'],['email','Email','email'],['phone','Phone (for text message step, later)','text'],['role','Role','select','<option value="owner">Owner</option><option value="admin">Admin</option>']],'admin.add_owner')+
+    (SUPER?formSec('Create an account','fowner',[['name','Name','text'],['email','Email','email'],['phone','Phone (for text message step, later)','text'],['role','Role','select','<option value="owner">Owner</option><option value="admin">Admin</option><option value="staff">Maintenance · sees properties and work log only</option>']],'admin.add_owner')+
     formSec('Assign a view and ownership','fpct',[['entity_id','Entity','select',entOpts],['owner_email','Account email','email'],['pct','Ownership % (0 = view only)','number']],'admin.set_ownership'):'<div class="sec"><div class="hd"><span class="t">Accounts and access are managed by the super admin.</span></div></div>');
   }
   document.querySelectorAll('form[data-action]').forEach(f=>f.addEventListener('submit',async ev=>{
