@@ -203,6 +203,15 @@ button{font-family:inherit}
 .applied.on{display:block}
 .applied .t{color:var(--green);font-size:14px;margin-bottom:10px}
 .applied li{font-size:13px;color:var(--dim);margin:5px 0 5px 18px}
+.glwrap{overflow-x:auto;padding:6px 22px 18px}
+.gltable{width:100%;border-collapse:collapse;font-size:12px;min-width:1100px}
+.gltable th{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:500;padding:8px 10px;text-align:right;border-bottom:1px solid var(--line)}
+.gltable td{padding:6px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid rgba(42,40,37,.5);color:var(--soft)}
+.gltable th:first-child,.gltable td:first-child{text-align:left}
+.gltable tr.tot td{color:var(--text);font-weight:600;border-bottom:1px solid var(--line)}
+.gltable tr.net td{color:var(--gold-hi);font-weight:600;border-bottom:none}
+.gltable tr.hdr td{color:var(--dim);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding-top:16px;border-bottom:none}
+.bsel{background:none;border:1px solid var(--line);color:var(--text);font:inherit;font-size:12px;padding:7px 10px}
 </style>
 </head>
 <body>
@@ -317,7 +326,7 @@ function enter(owner){
   const stf=owner.role==='staff';
   const tabs=stf?[['overview','Properties'],['activity','Work Log']]:[['overview','Overview'],['statements','Statements'],['documents','Documents'],['activity','Activity']];
   const adm=owner.role==='admin'||owner.role==='superadmin';
-  if(adm)tabs.push(['plan','Planner'],['admin','Admin'],['drop','Drop']);
+  if(adm)tabs.push(['plan','Planner'],['books','Books'],['admin','Admin'],['drop','Drop']);
   $('tabs').innerHTML=tabs.map(t=>'<button data-t="'+t[0]+'">'+t[1]+'</button>').join('');
   $('tabs').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.t;paint()}));
   if(adm&&location.hash==='#drop')tab='drop';
@@ -338,6 +347,7 @@ function paint(){
   if(tab==='documents')return viewDocuments();
   if(tab==='activity')return viewActivity();
   if(tab==='plan')return viewPlan();
+  if(tab==='books')return viewBooks();
   if(tab==='admin')return viewAdmin();
   if(tab==='drop')return viewDrop();
 }
@@ -520,6 +530,98 @@ function viewPlan(){
   document.querySelectorAll('[data-pe]').forEach(b=>b.addEventListener('click',()=>{PSEL[b.dataset.pe]=!PSEL[b.dataset.pe];viewPlan()}));
   const re=()=>{PLAND=Number($('pland').value)||0;PLIFE=Number($('plife').value)||39;PRATE=Number($('prate').value)||0;viewPlan()};
   ['pland','plife','prate'].forEach(id=>$(id).addEventListener('change',re));
+}
+
+/* ---------------- books ---------------- */
+let BENT=null,BYR=new Date().getFullYear(),GLACC=null;
+const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const cents=n=>{const v=Number(n||0);if(!v)return '·';return (v<0?'-$':'$')+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})};
+async function viewBooks(){
+  if(!BENT&&PF.entities.length)BENT=PF.entities[0].id;
+  if(!BENT){$('view').innerHTML='<div class="loading">No entities yet. Add properties first.</div>';return}
+  $('view').innerHTML='<div class="loading">Loading the books</div>';
+  const [ar,sr]=await Promise.all([GLACC?Promise.resolve({ok:true,accounts:GLACC}):data('gl.accounts'),data('gl.statement',{entity_id:BENT,year:BYR})]);
+  if(!ar.ok||!sr.ok){$('view').innerHTML='<div class="loading">'+esc(ar.error||sr.error||'Could not load the books')+'</div>';return}
+  GLACC=ar.accounts;
+  const rows=sr.rows||[];
+  const byId={};rows.forEach(r=>byId[r.id]=r);
+  const inc=rows.filter(r=>r.type==='income'),exp=rows.filter(r=>r.type==='expense');
+  const ast=rows.filter(r=>r.type==='asset'),lia=rows.filter(r=>r.type==='liability'),eqy=rows.filter(r=>r.type==='equity');
+  const z=()=>[0,0,0,0,0,0,0,0,0,0,0,0];
+  const sumM=(list,key)=>{const t=z();list.forEach(r=>r[key].forEach((v,i)=>t[i]+=v));return t};
+  const incM=sumM(inc,'monthly'),expM=sumM(exp,'monthly');
+  const netM=incM.map((v,i)=>v-expM[i]);
+  let run=0;const cyeM=netM.map(v=>run+=v);
+  const priorRE=inc.reduce((s,r)=>s+r.prior,0)-exp.reduce((s,r)=>s+r.prior,0);
+  const astM=sumM(ast,'asof'),liaM=sumM(lia,'asof'),eqyM=sumM(eqy,'asof');
+  const leM=liaM.map((v,i)=>v+eqyM[i]+priorRE+cyeM[i]);
+  const tsum=a=>a.reduce((s,v)=>s+v,0);
+  const entOpts=PF.entities.map(e=>'<option value="'+esc(e.id)+'"'+(e.id===BENT?' selected':'')+'>'+esc(e.name)+'</option>').join('');
+  const y0=new Date().getFullYear();
+  let yrOpts='';for(let y=y0-4;y<=y0+1;y++)yrOpts+='<option'+(y===BYR?' selected':'')+'>'+y+'</option>';
+  const rowH=(label,vals,cls)=>'<tr'+(cls?' class="'+cls+'"':'')+'><td>'+label+'</td>'+vals.map(v=>'<td>'+cents(v)+'</td>').join('')+'</tr>';
+  const accRows=(list,key,withTotal)=>list.map(r=>rowH(esc(r.code)+' · '+esc(r.name),withTotal?r[key].concat([r.total]):r[key])).join('');
+  const hdr=(label,vals)=>'<tr class="hdr"><td>'+label+'</td>'+vals.map(()=>'<td></td>').join('')+'</tr>';
+  const glOpts=t=>GLACC.filter(a=>a.type===t).map(a=>'<option value="'+esc(a.id)+'">'+esc(a.code)+' · '+esc(a.name)+'</option>').join('');
+  const acctSelect='<optgroup label="Income">'+glOpts('income')+'</optgroup><optgroup label="Expenses">'+glOpts('expense')+'</optgroup><optgroup label="Assets">'+glOpts('asset')+'</optgroup><optgroup label="Liabilities">'+glOpts('liability')+'</optgroup><optgroup label="Equity">'+glOpts('equity')+'</optgroup>';
+  $('view').innerHTML=
+  '<div class="phead"><h1>Books.</h1><span class="micro">general ledger · one account per line, same as the VIE statements</span></div>'+
+  '<div class="sec"><div class="hd"><span class="t">Statement</span><span style="display:flex;gap:12px;align-items:center">'+
+    '<select id="bent" class="bsel">'+entOpts+'</select><select id="byr" class="bsel">'+yrOpts+'</select></span></div>'+
+  '<div class="glwrap"><table class="gltable">'+
+    '<tr><th>Income statement '+BYR+'</th>'+MN.map(m=>'<th>'+m+'</th>').join('')+'<th>Total</th></tr>'+
+    hdr('Income',z().concat([0]))+accRows(inc,'monthly',true)+
+    rowH('Total income',incM.concat([tsum(incM)]),'tot')+
+    hdr('Expenses',z().concat([0]))+accRows(exp,'monthly',true)+
+    rowH('Total expenses',expM.concat([tsum(expM)]),'tot')+
+    rowH('Net income',netM.concat([tsum(netM)]),'net')+
+  '</table></div></div>'+
+  '<div class="sec"><div class="hd"><span class="t">Balance sheet</span><span class="micro">as of each month end · '+BYR+'</span></div>'+
+  '<div class="glwrap"><table class="gltable">'+
+    '<tr><th></th>'+MN.map(m=>'<th>'+m+'</th>').join('')+'</tr>'+
+    hdr('Assets',z())+accRows(ast,'asof')+rowH('Total assets',astM,'tot')+
+    hdr('Liabilities',z())+accRows(lia,'asof')+rowH('Total liabilities',liaM,'tot')+
+    hdr('Equity',z())+accRows(eqy,'asof')+
+    rowH('Retained earnings, prior years',z().map(()=>priorRE))+
+    rowH('Current year earnings',cyeM)+
+    rowH('Total liabilities and equity',leM,'tot')+
+  '</table></div></div>'+
+  '<div class="sec"><div class="hd"><span class="t">Post an entry</span><span class="micro">income and expenses positive · accumulated depreciation negative</span></div>'+
+  '<form id="fgl"><div class="formgrid">'+
+    '<div class="field"><label>Account</label><select name="account_id" required>'+acctSelect+'</select></div>'+
+    '<div class="field"><label>Date</label><input name="entry_date" type="date" required></div>'+
+    '<div class="field"><label>Amount $</label><input name="amount" type="number" step="any" required></div>'+
+    '<div class="field span3"><label>Memo</label><input name="memo" type="text"></div>'+
+  '</div><div class="formfoot"><button class="btn gold" type="submit">Post</button><span class="okmsg"></span><span class="err" style="margin-top:0"></span></div></form></div>'+
+  '<div class="sec"><div class="hd"><span class="t">Recent entries</span></div>'+
+    ((sr.recent||[]).map(en=>{const a=byId[en.account_id]||{};return '<div class="rowline"><span><span class="main">'+esc(a.code||'')+' · '+esc(a.name||'')+'</span> <span class="sub">· '+esc(en.entry_date)+(en.memo?' · '+esc(en.memo):'')+'</span></span><span class="right">'+cents(en.amount)+'<button class="linkbtn" data-gldel="'+esc(en.id)+'">Remove</button></span></div>'}).join('')||'<div class="rowline"><span class="sub">Nothing posted to this entity yet</span></div>')+
+  '</div>'+
+  '<div class="sec"><div class="hd"><span class="t">Add an account</span><span class="micro">match Karen\'s sheet word for word</span></div>'+
+  '<form id="fglacc"><div class="formgrid">'+
+    '<div class="field"><label>Code</label><input name="code" type="text" required></div>'+
+    '<div class="field"><label>Name</label><input name="name" type="text" required></div>'+
+    '<div class="field"><label>Type</label><select name="type" required><option value="income">Income</option><option value="expense">Expense</option><option value="asset">Asset</option><option value="liability">Liability</option><option value="equity">Equity</option></select></div>'+
+  '</div><div class="formfoot"><button class="btn gold" type="submit">Add</button><span class="okmsg"></span><span class="err" style="margin-top:0"></span></div></form></div>';
+  $('bent').addEventListener('change',()=>{BENT=$('bent').value;viewBooks()});
+  $('byr').addEventListener('change',()=>{BYR=Number($('byr').value);viewBooks()});
+  const wire=(id,action,extra,okText)=>{const f=$(id);f.addEventListener('submit',async ev=>{
+    ev.preventDefault();
+    const payload=Object.assign({},extra);new FormData(f).forEach((v,k)=>{if(v!=='')payload[k]=v});
+    const btn=f.querySelector('.btn');btn.disabled=true;
+    const r=await data(action,payload);
+    btn.disabled=false;
+    const ok=f.querySelector('.okmsg'),er=f.querySelector('.err');clr(er);ok.classList.remove('on');
+    if(r.ok){ok.textContent=okText;ok.classList.add('on');if(action==='gl.add_account')GLACC=null;viewBooks()}
+    else err(er,r.error||'Could not save.');
+  })};
+  wire('fgl','gl.add_entry',{entity_id:BENT},'Posted.');
+  wire('fglacc','gl.add_account',{},'Added.');
+  document.querySelectorAll('[data-gldel]').forEach(b=>b.addEventListener('click',async()=>{
+    if(!b.dataset.armed){b.dataset.armed='1';const t=b.textContent;b.textContent='Sure?';setTimeout(()=>{if(b.dataset){b.dataset.armed='';b.textContent=t}},2600);return}
+    b.disabled=true;
+    const r=await data('gl.delete_entry',{entry_id:b.dataset.gldel});
+    if(r.ok)viewBooks();else{b.disabled=false;b.textContent=r.error||'Failed'}
+  }));
 }
 
 /* ---------------- admin ---------------- */
