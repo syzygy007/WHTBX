@@ -317,7 +317,7 @@ function enter(owner){
   const stf=owner.role==='staff';
   const tabs=stf?[['overview','Properties'],['activity','Work Log']]:[['overview','Overview'],['statements','Statements'],['documents','Documents'],['activity','Activity']];
   const adm=owner.role==='admin'||owner.role==='superadmin';
-  if(adm)tabs.push(['admin','Admin'],['drop','Drop']);
+  if(adm)tabs.push(['plan','Planner'],['admin','Admin'],['drop','Drop']);
   $('tabs').innerHTML=tabs.map(t=>'<button data-t="'+t[0]+'">'+t[1]+'</button>').join('');
   $('tabs').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.t;paint()}));
   if(adm&&location.hash==='#drop')tab='drop';
@@ -337,6 +337,7 @@ function paint(){
   if(tab==='statements')return viewStatements();
   if(tab==='documents')return viewDocuments();
   if(tab==='activity')return viewActivity();
+  if(tab==='plan')return viewPlan();
   if(tab==='admin')return viewAdmin();
   if(tab==='drop')return viewDrop();
 }
@@ -458,6 +459,66 @@ function viewActivity(){
     if(r.ok){ok.textContent='Logged.';ok.classList.add('on');f.reset();const p=await data('portfolio');if(p.ok)PF=p;viewActivity()}
     else err(er,r.error||'Could not save.');
   });
+}
+
+/* ---------------- planner ---------------- */
+let PSEL=null,PLAND=20,PLIFE=39,PRATE=7;
+function planRentMonth(e,y,m){
+  const L=e.lease;if(!L)return 0;
+  const d=y+'-'+String(m).padStart(2,'0')+'-15';
+  const S=L.schedule||[];
+  for(let i=0;i<S.length;i++){const s=S[i];if(s.step_start<=d&&(!s.step_end||s.step_end>=d))return Number(s.monthly_rent)}
+  if(Number(L.base_rent)>0){
+    let yrs=0;
+    if(L.start_date){const st=new Date(L.start_date+'T00:00:00Z'),now=new Date(d+'T00:00:00Z');if(now<st)return 0;yrs=now.getUTCFullYear()-st.getUTCFullYear();const anniv=new Date(Date.UTC(now.getUTCFullYear(),st.getUTCMonth(),st.getUTCDate()));if(now<anniv)yrs-=1;if(yrs<0)yrs=0}
+    return Math.round(Number(L.base_rent)*Math.pow(1+Number(L.escalator_pct||0)/100,yrs)*100)/100;
+  }
+  return 0;
+}
+function planYearRent(e,y){let t=0;for(let m=1;m<=12;m++)t+=planRentMonth(e,y,m);return t}
+function viewPlan(){
+  if(!PSEL){PSEL={};PF.entities.forEach(e=>PSEL[e.id]=true)}
+  const sel=PF.entities.filter(e=>PSEL[e.id]);
+  const y0=new Date().getFullYear();
+  const years=[y0,y0+1,y0+2,y0+3,y0+4];
+  const t={value:0,debt:0,equity:0,rent:0,dep:0,int:0};
+  const rows=sel.map(e=>{
+    const price=Number(e.property.purchase_price||0);
+    const basis=price*(1-PLAND/100);
+    const dep=basis>0?basis/PLIFE:0;
+    const rent=planYearRent(e,y0);
+    const intr=Number(e.debt)*PRATE/100;
+    t.value+=e.value;t.debt+=e.debt;t.equity+=e.equity;t.rent+=rent;t.dep+=dep;t.int+=intr;
+    return {e:e,price:price,basis:basis,dep:dep,rent:rent,intr:intr};
+  });
+  const taxable=t.rent-t.dep-t.int;
+  $('view').innerHTML=
+  '<div class="phead"><h1>Planner.</h1><span class="micro">what-if on any mix of entities · planning estimates, not tax advice</span></div>'+
+  '<div class="ofilter">'+PF.entities.map(e=>'<button type="button" data-pe="'+esc(e.id)+'" class="'+(PSEL[e.id]?'on':'')+'">'+esc(e.name)+'</button>').join('')+'</div>'+
+  '<div class="sec"><div class="hd"><span class="t">Assumptions</span><span class="micro">change one and it recalculates</span></div>'+
+  '<div class="formgrid" style="padding:18px 22px">'+
+    '<div class="field"><label>Land share of purchase price %</label><input id="pland" type="number" step="any" value="'+PLAND+'"></div>'+
+    '<div class="field"><label>Depreciation life</label><select id="plife"><option value="39"'+(PLIFE===39?' selected':'')+'>39 yr · commercial</option><option value="27.5"'+(PLIFE===27.5?' selected':'')+'>27.5 yr · residential</option></select></div>'+
+    '<div class="field"><label>Interest rate on debt %</label><input id="prate" type="number" step="any" value="'+PRATE+'"></div>'+
+  '</div></div>'+
+  '<div class="tiles">'+
+    '<div class="tile"><div class="l">Combined equity · '+sel.length+' selected</div><div class="n">'+moneyM(t.equity)+'</div></div>'+
+    '<div class="tile"><div class="l">Rent '+y0+'</div><div class="n">'+money(Math.round(t.rent))+'</div></div>'+
+    '<div class="tile"><div class="l">Depreciation / yr</div><div class="n">'+money(Math.round(t.dep))+'</div></div>'+
+    '<div class="tile"><div class="l">Est. taxable '+y0+'</div><div class="n gold">'+money(Math.round(taxable))+'</div></div>'+
+  '</div>'+
+  '<div class="sec"><div class="hd"><span class="t">If the selected entities filed as one</span><span class="micro">rent − depreciation − interest at '+PRATE+'%</span></div>'+
+    rows.map(r=>'<div class="rowline"><span><span class="main">'+esc(r.e.name)+'</span> <span class="sub">· '+(r.price?'basis '+money(Math.round(r.basis)):'no purchase price on file')+'</span></span><span class="right"><span class="sub">rent '+money(Math.round(r.rent))+'</span><span class="sub">dep '+money(Math.round(r.dep))+'</span><span class="sub">int '+money(Math.round(r.intr))+'</span></span></div>').join('')+
+    '<div class="rowline"><span class="main">Combined</span><span class="right"><span class="sub">rent '+money(Math.round(t.rent))+'</span><span class="sub">dep '+money(Math.round(t.dep))+'</span><span class="sub">int '+money(Math.round(t.int))+'</span><span class="gold-t">'+money(Math.round(taxable))+' taxable</span></span></div>'+
+  '</div>'+
+  '<div class="sec"><div class="hd"><span class="t">Rent plan · next five years</span><span class="micro">from the loaded schedules and escalators</span></div>'+
+    '<div class="rowline"><span class="sub">Year</span><span class="right">'+years.map(y=>'<span class="sub" style="min-width:86px;text-align:right">'+y+'</span>').join('')+'</span></div>'+
+    sel.map(e=>'<div class="rowline"><span class="main">'+esc(e.name)+'</span><span class="right">'+years.map(y=>'<span class="sub" style="min-width:86px;text-align:right">'+money(Math.round(planYearRent(e,y)))+'</span>').join('')+'</span></div>').join('')+
+    '<div class="rowline"><span class="main">Total</span><span class="right">'+years.map(y=>'<span class="gold-t" style="min-width:86px;text-align:right">'+money(Math.round(sel.reduce((s,e)=>s+planYearRent(e,y),0)))+'</span>').join('')+'</span></div>'+
+  '</div>';
+  document.querySelectorAll('[data-pe]').forEach(b=>b.addEventListener('click',()=>{PSEL[b.dataset.pe]=!PSEL[b.dataset.pe];viewPlan()}));
+  const re=()=>{PLAND=Number($('pland').value)||0;PLIFE=Number($('plife').value)||39;PRATE=Number($('prate').value)||0;viewPlan()};
+  ['pland','plife','prate'].forEach(id=>$(id).addEventListener('change',re));
 }
 
 /* ---------------- admin ---------------- */
