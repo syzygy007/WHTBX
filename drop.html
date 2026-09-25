@@ -81,8 +81,10 @@ h1 .ghost{color:var(--dim)}
 .s-in:focus{border-bottom:1px solid var(--gold)}
 .s-rent{text-align:right;width:110px;color:var(--gold-hi)}
 .srk{display:flex;gap:10px;align-items:center;color:var(--dim2)}
-.srow .v{display:flex;gap:12px;align-items:center;justify-content:flex-end}
+.srow .v,.orow .v{display:flex;gap:12px;align-items:center;justify-content:flex-end}
 .schedhd .k{color:var(--dim)}
+.o-name{width:130px}
+.o-mail{min-width:190px}
 .applied{display:none;margin-top:30px;border:1px solid rgba(143,191,138,.35);background:var(--panel);padding:20px 22px}
 .applied.on{display:block}
 .applied .t{color:var(--green);font-size:14px;margin-bottom:10px}
@@ -250,7 +252,8 @@ const FIELDS=[
 ];
 function getPath(o,p){const k=p.split('.');const a=o&&o[k[0]];return a==null?null:(a[k[1]]==null?null:a[k[1]])}
 function srowHtml(a,b,r){return '<div class="row srow"><span class="k srk"><input class="s-in" data-s="start" type="date" value="'+esc(a||'')+'"><span>&rarr;</span><input class="s-in" data-s="end" type="date" value="'+esc(b||'')+'" title="Blank = open"></span><span class="v"><input class="s-in s-rent" data-s="rent" type="number" step="any" value="'+esc(r==null?'':r)+'" placeholder="$/mo"><button class="linkbtn sdel" type="button" title="Remove this period">&times;</button></span></div>'}
-function wireDel(root){root.querySelectorAll('.sdel').forEach(b=>{if(b.dataset.w)return;b.dataset.w='1';b.addEventListener('click',()=>b.closest('.srow').remove())})}
+function orowHtml(n,em,p){return '<div class="row orow"><span class="k srk"><input class="s-in o-name" data-o="name" type="text" placeholder="Name" value="'+esc(n||'')+'"><input class="s-in o-mail" data-o="email" type="email" placeholder="email@" value="'+esc(em||'')+'"></span><span class="v"><input class="s-in s-rent" data-o="pct" type="number" step="any" min="0" max="100" placeholder="%" value="'+esc(p==null?'':p)+'"><button class="linkbtn odel" type="button" title="Remove this partner">&times;</button></span></div>'}
+function wireDel(root){root.querySelectorAll('.sdel,.odel').forEach(b=>{if(b.dataset.w)return;b.dataset.w='1';b.addEventListener('click',()=>b.closest('.srow,.orow').remove())})}
 function paint(p){
   $('sumline').textContent=(p.summary||'')+' Untick a record to leave it out. Every field is editable before you save.';
   $('cards').innerHTML=(p.entities||[]).map((e,ix)=>{
@@ -262,11 +265,13 @@ function paint(p){
     }).join('');
     rows+='<div class="row schedhd"><span class="k">Rent schedule</span><span class="v"><button class="linkbtn addstep" type="button">+ Add a period</button></span></div>';
     rows+=(e.rent_schedule||[]).map(s=>srowHtml(s.start_date,s.end_date,s.monthly_rent)).join('');
-    (e.owners||[]).forEach(o=>{rows+='<div class="row"><span class="k">Owner</span><span class="v">'+esc(o.name||o.email||'')+' &middot; <span class="gold-v">'+esc(o.pct)+'%</span></span></div>'});
+    rows+='<div class="row schedhd"><span class="k">Partners and ownership</span><span class="v"><button class="linkbtn addowner" type="button">+ Add a partner</button></span></div>';
+    rows+=(e.owners||[]).map(o=>orowHtml(o.name,o.email,o.pct)).join('');
     return '<div class="pcard" data-card="'+ix+'"><div class="nm"><span class="nmleft"><input type="checkbox" class="incbox" checked title="Untick to leave this record out">'+nameEl+'</span>'+tag+'</div><div class="rows">'+rows+'</div></div>';
   }).join('');
   document.querySelectorAll('.incbox').forEach(c=>c.addEventListener('change',()=>{c.closest('.pcard').classList.toggle('off',!c.checked)}));
   document.querySelectorAll('.addstep').forEach(b=>b.addEventListener('click',()=>{b.closest('.row').insertAdjacentHTML('afterend',srowHtml('','',''));wireDel(b.closest('.pcard'))}));
+  document.querySelectorAll('.addowner').forEach(b=>b.addEventListener('click',()=>{b.closest('.row').insertAdjacentHTML('afterend',orowHtml('','',''));wireDel(b.closest('.pcard'))}));
   wireDel(document);
   $('preview').classList.add('on');
   $('preview').scrollIntoView({behavior:'smooth'});
@@ -292,6 +297,12 @@ $('apply').addEventListener('click',async()=>{
       if(st&&rt!=='')sched.push({start_date:st,end_date:en||null,monthly_rent:Number(rt)});
     });
     e.rent_schedule=sched;
+    const owners=[];
+    card.querySelectorAll('.orow').forEach(rw=>{
+      const nm=rw.querySelector('[data-o="name"]').value.trim(),em=rw.querySelector('[data-o="email"]').value.trim().toLowerCase(),pc=rw.querySelector('[data-o="pct"]').value;
+      if(em)owners.push({name:nm||null,email:em,pct:pc===''?null:Number(pc)});
+    });
+    e.owners=owners;
     if(e.lease&&Object.values(e.lease).every(v=>v==null))e.lease=null;
     out.push(e);
   });
