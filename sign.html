@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>WHTBX · Sign</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#101010">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#101010;--panel:#151412;--panel2:#1B1A17;--line:#2A2823;--txt:#EDEAE4;--dim:#98938B;--dim2:#6E6A63;--gold:#E8B95A;--gold-hi:#F0C46A;--gold-deep:#8A6A2F;--amber:#E8A13D;--errc:#C97A6B;--font:'Space Grotesk',system-ui,sans-serif}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--font);padding-bottom:env(safe-area-inset-bottom)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+@media(max-width:720px){.wrap{padding:0 16px}}
+.nav{position:sticky;top:0;z-index:20;background:rgba(16,16,16,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.nav a{color:var(--txt);text-decoration:none;font-weight:700;letter-spacing:.34em;font-size:14px}
+.nav .who{font-size:11px;color:var(--dim2)}
+.micro{font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:48px;align-items:center;padding:64px 0 24px}
+@media(max-width:860px){.hero{grid-template-columns:1fr;gap:28px;padding:36px 0 12px}}
+.hero h1{margin:16px 0 22px;font-weight:700;letter-spacing:-.04em;line-height:.92;font-size:clamp(52px,9vw,116px)}
+.hero h1 i{font-style:normal;color:var(--gold)}
+.hero .lede{margin:0 0 10px;font-size:clamp(20px,3vw,30px);font-weight:500;letter-spacing:-.02em;line-height:1.15}
+.hero .sub{margin:0;color:var(--dim);font-size:15px}
+.card{border:1px solid var(--line);background:var(--panel);padding:24px;display:grid;gap:14px}
+.card2{border:1px solid var(--line);background:var(--panel);padding:40px 32px 32px;display:grid;gap:14px;justify-items:center;text-align:center}
+.card2.over{border-color:var(--gold)}
+.card2 .or{color:var(--dim);font-size:14px}
+.card2 .spec{color:var(--dim2);font-size:13px}
+.card2 input{display:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;width:100%;height:54px;border:none;background:var(--gold);color:#151412;font:600 13px/1 var(--font);letter-spacing:.16em;text-transform:uppercase;cursor:pointer;text-decoration:none}
+.btn:hover{background:var(--gold-hi)}
+.btn.ghost{background:none;border:1px solid var(--line);color:var(--txt)}
+.btn.ghost:hover{border-color:var(--gold);color:var(--gold-hi)}
+.btn[disabled]{opacity:.5;cursor:default}
+.steps{display:grid;grid-template-columns:auto 1fr auto 1fr auto;gap:22px;align-items:end;padding:52px 0 44px}
+.steps span{display:grid;gap:4px;font-size:17px;font-weight:600;color:var(--dim2)}
+.steps span small{font-size:13px;font-weight:400;color:var(--dim2)}
+.steps span.on{color:var(--txt)}.steps span.on small{color:var(--gold)}
+.steps i{display:block;border-top:1px solid var(--line);margin-bottom:12px}
+@media(max-width:600px){.steps{padding:30px 0 26px;gap:12px}.steps span{font-size:14px}}
+.head{padding:36px 0 20px}
+.head h1{margin:12px 0 10px;font-weight:700;letter-spacing:-.03em;line-height:.95;font-size:clamp(36px,7vw,64px)}
+.head p{margin:0;max-width:60ch;color:var(--dim)}
+.tools{position:sticky;top:calc(60px + env(safe-area-inset-top));z-index:15;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tools .l{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-right:4px}
+.mode{border:1px solid var(--line);background:var(--panel);color:var(--txt);border-radius:999px;padding:7px 14px;font:600 13px/1 var(--font);cursor:pointer}
+.mode.on{background:var(--gold);border-color:var(--gold);color:#151412}
+.tools .sp{flex:1}
+.tools .cnt{font-size:13px;color:var(--dim)}
+.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:28px;align-items:start;padding:22px 0 64px}
+.grid>*{min-width:0}
+@media(max-width:860px){.grid{grid-template-columns:1fr;gap:18px}}
+.pages{display:grid;gap:14px}
+.page{position:relative;border:1px solid var(--line);background:#fff;cursor:crosshair;touch-action:manipulation}
+.page canvas{display:block;width:100%;height:auto}
+.page .n{position:absolute;top:8px;right:8px;font-size:10px;font-weight:600;letter-spacing:.1em;color:#777;background:#f2f0ec;padding:2px 6px;pointer-events:none}
+.f{position:absolute;border:2px solid var(--gold-deep);background:rgba(232,185,90,.22);display:flex;align-items:center;justify-content:center;font:600 11px/1 var(--font);letter-spacing:.08em;text-transform:uppercase;color:#111;cursor:move;touch-action:none}
+.f.date,.f.name,.f.title,.f.company{background:rgba(232,185,90,.3);text-transform:none;letter-spacing:0;font-weight:500;font-size:12px;justify-content:flex-start;padding-left:4px;overflow:hidden;white-space:nowrap}
+.f .tag{position:absolute;left:4px;top:1px;font:500 7px/1 var(--font);color:#555;pointer-events:none}
+.f .uid{position:absolute;left:4px;bottom:1px;font:500 6px/1 var(--font);color:#777;pointer-events:none}
+.f.sig{border-left-width:3px}
+.f .rz{position:absolute;right:-7px;bottom:-7px;width:16px;height:16px;border-radius:50%;background:var(--gold);border:2px solid #fff;cursor:nwse-resize;touch-action:none}
+.f img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.f .x{position:absolute;top:-12px;right:-12px;width:24px;height:24px;border-radius:50%;background:#000;color:#fff;font-size:13px;line-height:24px;text-align:center;cursor:pointer}
+.scard{border:1px solid var(--line);background:var(--panel);padding:22px;display:grid;gap:14px;position:sticky;top:120px}
+@media(max-width:860px){.scard{position:static}}
+.scard h2{margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em}
+.field{display:grid;gap:6px}
+.field label{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.field input{background:var(--panel2);border:1px solid var(--line);color:var(--txt);font:400 15px/1.3 var(--font);padding:11px 12px;outline:none}
+.field input:focus{border-color:var(--gold-deep)}
+.note{font-size:13px;line-height:1.5;color:var(--dim)}
+.tick{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.5}
+.tick input{width:20px;height:20px;flex:none;margin-top:2px;accent-color:var(--gold)}
+.padwrap{display:grid;gap:8px}
+.padlab{display:flex;align-items:baseline;justify-content:space-between;font-size:13px;font-weight:600}
+.padlab a{font-weight:600;color:var(--dim);cursor:pointer;text-decoration:underline;font-size:13px}
+.pad{position:relative;border:1px solid var(--line);background:#fff;touch-action:none}
+.pad canvas{display:block;width:100%;height:150px;cursor:crosshair}
+.pad .hint{position:absolute;left:20px;right:20px;bottom:24px;border-top:1px solid #ddd;text-align:center;pointer-events:none}
+.pad .hint span{display:inline-block;transform:translateY(10px);background:#fff;padding:0 10px;font-size:12px;color:#999}
+.pad.inked .hint{opacity:0}
+.msg{font-size:13px;min-height:18px}
+.msg.bad{color:var(--errc)}
+.ok{padding:26px;border:1px solid var(--line);background:var(--panel);display:grid;gap:14px;max-width:560px;margin-bottom:64px}
+.ok b{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row .btn{width:auto;padding:0 22px}
+#gate .note a{color:var(--gold-hi)}
+</style>
+</head>
+<body>
+
+<header class="nav"><div class="wrap">
+  <a href="app.html">WHTBX</a>
+  <span class="who" id="who">SIGN</span>
+</div></header>
+
+<main class="wrap">
+  <div class="hero" id="hero">
+    <div>
+      <div class="micro">WHTBX · Sign</div>
+      <h1>Sign<br>anything<i>.</i></h1>
+      <p class="lede">Upload. Sign. Send.</p>
+      <p class="sub">Signed copy emailed. The record is kept, never the document.</p>
+    </div>
+    <div>
+      <div id="gate" class="card" style="display:none">
+        <h2 style="margin:0;font-size:20px;font-weight:700">Sign in first.</h2>
+        <p class="note">Use your portal sign in, then come back here.</p>
+        <a class="btn" href="app.html">Open the portal</a>
+      </div>
+      <div class="card2" id="drop" style="display:none">
+        <input type="file" id="file" accept="application/pdf,.pdf">
+        <button class="btn" id="pick">Choose a PDF</button>
+        <div class="or">or drop one here</div>
+        <div class="spec">PDF · up to 12 MB</div>
+      </div>
+    </div>
+  </div>
+  <div class="steps" id="steps"><span class="on"><small>01</small>Upload</span><i></i><span><small>02</small>Sign</span><i></i><span><small>03</small>Send</span></div>
+
+  <div id="app" style="display:none">
+    <div class="head" id="head" style="display:none">
+      <div class="micro">WHTBX · Sign</div>
+      <h1 id="h1">Sign anything.</h1>
+      <p id="sub"></p>
+    </div>
+    <div id="work" style="display:none">
+      <div class="tools">
+        <span class="l">Tap to place</span>
+        <button class="mode on" data-mode="sig">Signature</button>
+        <button class="mode" data-mode="date">Date</button>
+        <button class="mode" data-mode="name">Name</button>
+        <button class="mode" data-mode="title">Title</button>
+        <button class="mode" data-mode="company">Company</button>
+        <span class="sp"></span>
+        <span class="cnt" id="cnt">No fields yet</span>
+      </div>
+      <div class="grid">
+        <div class="pages" id="pages"></div>
+        <div class="scard">
+          <h2>Sign it.</h2>
+          <div class="field"><label for="name">Your full name</label><input id="name" autocomplete="name"></div>
+          <div class="field"><label for="title2">Title (optional)</label><input id="title2"></div>
+          <div class="field"><label for="company">Company (optional)</label><input id="company" autocomplete="organization"></div>
+          <div class="field"><label for="email">Send the signed copy to</label><input id="email" type="email" autocomplete="email" inputmode="email"></div>
+          <div class="padwrap">
+            <div class="padlab"><label for="pad">Your signature</label><a id="clear">Clear</a></div>
+            <div class="pad" id="padbox"><canvas id="pad"></canvas>
+              <div class="hint"><span>Sign here with your finger</span></div></div>
+          </div>
+          <label class="tick"><input type="checkbox" id="consent">
+            I agree to sign this electronically and this is my signature.</label>
+          <button class="btn" id="sign">Sign and send</button>
+          <p class="note">The signed PDF is emailed to you. Every page and your signature carry a WHTBX ID that anyone can verify. WHTBX keeps the signing record (document name, time, ID, hash), never the document.</p>
+          <div class="msg" id="msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ok" id="done" style="display:none">
+      <b>Signed.</b>
+      <p class="note" id="dnote"></p>
+      <div class="row">
+        <a class="btn" id="dlink" href="#" download>Save the signed PDF</a>
+        <a class="btn ghost" id="again" href="sign.html">Sign another</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+import * as pdfjsLib from './pdf.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.mjs';
+
+const API = 'https://buyuqranpfaugchklqev.supabase.co/functions/v1';
+const $ = s => document.querySelector(s);
+function step(n){ document.querySelectorAll('#steps span').forEach((e, i) => e.classList.toggle('on', i < n)); }
+const say = (t, bad) => { const e = $('#msg'); e.textContent = t || ''; e.className = 'msg' + (t && bad ? ' bad' : ''); };
+
+/* ---------- door: the portal session token ---------- */
+let TOKEN = null; try{ TOKEN = localStorage.getItem('whtbx_token'); }catch(e){}
+async function fn(name, body){
+  const r = await fetch(API + '/' + name, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  return r.json().catch(() => ({ ok: false, error: 'no answer from the server' }));
+}
+function ready(owner){
+  $('#gate').style.display = 'none'; $('#drop').style.display = ''; $('#app').style.display = '';
+  $('#who').textContent = owner.email || 'SIGN';
+  if(owner.name) $('#name').value = owner.name;
+  if(owner.email) $('#email').value = owner.email;
+  relabel(); fit();
+}
+(async () => {
+  if(TOKEN){
+    const r = await fn('quick-endpoinportalt', { action: 'me', token: TOKEN });
+    if(r && r.ok && r.owner) return ready(r.owner);
+  }
+  $('#gate').style.display = '';
+})();
+
+/* ---------- the document ---------- */
+let BUF = null, FILE = '', PAGES = [], FIELDS = [], MODE = 'sig';
+const SIZE = { sig: [0.2, 0.045], date: [0.12, 0.022], name: [0.2, 0.022], title: [0.2, 0.022], company: [0.26, 0.022] };
+
+$('#pick').onclick = () => $('#file').click();
+$('#file').onchange = e => { if(e.target.files[0]) openPdf(e.target.files[0]); };
+const drop = $('#drop');
+['dragenter','dragover'].forEach(k => drop.addEventListener(k, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave','drop'].forEach(k => drop.addEventListener(k, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if(f) openPdf(f); });
+
+async function openPdf(f){
+  if(!/pdf$/i.test(f.name) && f.type !== 'application/pdf') return alert('PDF only for now.');
+  FILE = f.name; BUF = await f.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: BUF.slice(0) }).promise;
+  const host = $('#pages'); host.innerHTML = ''; PAGES = []; FIELDS = [];
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.min(host.getBoundingClientRect().width || 600, 900);
+  for(let p = 1; p <= pdf.numPages; p++){
+    const page = await pdf.getPage(p);
+    const v1 = page.getViewport({ scale: 1 });
+    const scale = w / v1.width;
+    const vp = page.getViewport({ scale: scale * DPR });
+    const c = document.createElement('canvas'); c.width = vp.width; c.height = vp.height;
+    await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+    const box = document.createElement('div'); box.className = 'page'; box.dataset.p = p;
+    box.appendChild(c);
+    const n = document.createElement('span'); n.className = 'n'; n.textContent = 'PAGE ' + p + ' OF ' + pdf.numPages; box.appendChild(n);
+    box.addEventListener('click', ev => place(ev, box, p));
+    host.appendChild(box); PAGES.push(box);
+    try{
+      const ann = await page.getAnnotations();
+      for(const a of ann){
+        if(a.subtype !== 'Widget' || !a.rect) continue;
+        const nm = String(a.fieldName || '') + ' ' + String(a.alternativeText || '');
+        const kind = a.fieldType === 'Sig' || /sig/i.test(nm) ? 'sig' : /date/i.test(nm) ? 'date' : /title/i.test(nm) ? 'title' : /company|firm|entity|organi[sz]ation|business/i.test(nm) ? 'company' : /\bname\b|signer|print/i.test(nm) ? 'name' : '';
+        if(!kind) continue;
+        const [x1, y1, x2, y2] = a.rect;
+        const f2 = { page: p, kind, x: Math.min(x1, x2) / v1.width, y: 1 - Math.max(y1, y2) / v1.height, w: Math.abs(x2 - x1) / v1.width, h: Math.abs(y2 - y1) / v1.height, id: Math.random().toString(36).slice(2), auto: true };
+        if(f2.w < 0.03 || f2.h < 0.008) continue;
+        FIELDS.push(f2); draw(f2, box);
+      }
+    }catch(e){}
+  }
+  if(FIELDS.length) $('#sub').textContent = 'Found the fields on this form. Remove any you do not need, tap to add more, then sign once below.';
+  $('#hero').style.display = 'none'; $('#head').style.display = ''; step(2);
+  $('#h1').textContent = FILE.replace(/\.pdf$/i, '') + '.';
+  if(!FIELDS.length) $('#sub').textContent = 'Tap the page where each signature goes. Then sign once below.';
+  $('#work').style.display = '';
+  count(); fit();
+}
+
+document.querySelectorAll('.mode').forEach(b => b.onclick = () => {
+  MODE = b.dataset.mode;
+  document.querySelectorAll('.mode').forEach(x => x.classList.toggle('on', x === b));
+});
+
+function place(ev, box, p){
+  if(ev.target.closest('.f')) return;
+  const r = box.getBoundingClientRect();
+  const [fw, fh] = SIZE[MODE];
+  let fx = (ev.clientX - r.left) / r.width - fw / 2, fy = (ev.clientY - r.top) / r.height - fh / 2;
+  fx = Math.max(0, Math.min(1 - fw, fx)); fy = Math.max(0, Math.min(1 - fh, fy));
+  const f = { page: p, kind: MODE, x: fx, y: fy, w: fw, h: fh, id: Math.random().toString(36).slice(2) };
+  FIELDS.push(f); draw(f, box); count();
+}
+function draw(f, pg){
+  const d = document.createElement('div'); d.className = 'f ' + f.kind; d.dataset.id = f.id;
+  d.style.left = (f.x * 100) + '%'; d.style.top = (f.y * 100) + '%'; d.style.width = (f.w * 100) + '%'; d.style.height = (f.h * 100) + '%';
+  d.textContent = label(f.kind);
+  if(f.kind === 'sig'){ if(inked){ d.childNodes[0].textContent = ''; const i = new Image(); i.src = cv.toDataURL('image/png'); d.appendChild(i); }
+    const t = document.createElement('span'); t.className = 'tag'; t.textContent = 'Signed by:'; d.appendChild(t);
+    const u = document.createElement('span'); u.className = 'uid'; u.textContent = 'WHTBX ID on signing'; d.appendChild(u); }
+  const x = document.createElement('span'); x.className = 'x'; x.textContent = 'x';
+  x.onclick = e => { e.stopPropagation(); FIELDS = FIELDS.filter(q => q.id !== f.id); d.remove(); count(); };
+  const rz = document.createElement('span'); rz.className = 'rz';
+  d.appendChild(x); d.appendChild(rz); pg.appendChild(d);
+  let st = null;
+  const down = (e, mode) => { e.stopPropagation(); e.preventDefault(); const r = pg.getBoundingClientRect();
+    st = { mode, r, sx: e.clientX, sy: e.clientY, x: f.x, y: f.y, w: f.w, h: f.h, moved: false }; e.target.setPointerCapture(e.pointerId); };
+  d.addEventListener('pointerdown', e => { if(e.target === x) return; down(e, e.target === rz ? 'rz' : 'mv'); });
+  const move = e => { if(!st) return; const dx = (e.clientX - st.sx) / st.r.width, dy = (e.clientY - st.sy) / st.r.height;
+    if(Math.abs(e.clientX - st.sx) + Math.abs(e.clientY - st.sy) > 3) st.moved = true;
+    if(st.mode === 'mv'){ f.x = Math.max(0, Math.min(1 - f.w, st.x + dx)); f.y = Math.max(0, Math.min(1 - f.h, st.y + dy)); }
+    else { f.w = Math.max(0.04, Math.min(1 - f.x, st.w + dx)); f.h = Math.max(0.01, Math.min(1 - f.y, st.h + dy)); }
+    d.style.left = (f.x * 100) + '%'; d.style.top = (f.y * 100) + '%'; d.style.width = (f.w * 100) + '%'; d.style.height = (f.h * 100) + '%'; };
+  d.addEventListener('pointermove', move); rz.addEventListener('pointermove', move);
+  const up = () => { st = null; };
+  ['pointerup','pointercancel'].forEach(k => { d.addEventListener(k, up); rz.addEventListener(k, up); });
+  d.addEventListener('click', e => e.stopPropagation());
+}
+function today(){ return new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }); }
+function label(k){ return k === 'sig' ? 'Sign here' : k === 'date' ? today() : k === 'title' ? ($('#title2').value.trim() || 'Title') : k === 'company' ? ($('#company').value.trim() || 'Company') : ($('#name').value.trim() || 'Name'); }
+function relabel(){ document.querySelectorAll('.f.name, .f.title, .f.company').forEach(d => { d.childNodes[0].textContent = label(d.classList.contains('title') ? 'title' : d.classList.contains('company') ? 'company' : 'name'); }); }
+$('#name').addEventListener('input', relabel); $('#title2').addEventListener('input', relabel); $('#company').addEventListener('input', relabel);
+function count(){
+  const s = FIELDS.filter(f => f.kind === 'sig').length, o = FIELDS.length - s;
+  $('#cnt').textContent = FIELDS.length ? (s + ' signature' + (s === 1 ? '' : 's') + (o ? ', ' + o + ' other' : '')) : 'No fields yet';
+}
+function paint(){
+  document.querySelectorAll('.f.sig').forEach(d => {
+    d.querySelectorAll('img').forEach(i => i.remove());
+    if(inked){ d.childNodes[0].textContent = ''; const i = new Image(); i.src = cv.toDataURL('image/png'); d.insertBefore(i, d.firstChild); }
+    else d.childNodes[0].textContent = 'Sign here';
+  });
+}
+
+/* ---------- the pad ---------- */
+const cv = $('#pad'), cx = cv.getContext('2d');
+let inked = false, drawing = false, box = null, DPR = 1;
+function fit(){
+  const keep = inked ? cv.toDataURL('image/png') : null;
+  DPR = Math.min(window.devicePixelRatio || 1, 3);
+  const r = cv.getBoundingClientRect(); if(!r.width) return;
+  cv.width = Math.round(r.width * DPR); cv.height = Math.round(r.height * DPR);
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  cx.lineWidth = 2.4; cx.lineCap = 'round'; cx.lineJoin = 'round'; cx.strokeStyle = '#000';
+  if(keep){ const i = new Image(); i.onload = () => cx.drawImage(i, 0, 0, r.width, r.height); i.src = keep; }
+}
+function at(e){ const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+function mark(p){
+  if(!box) box = { x1: p.x, y1: p.y, x2: p.x, y2: p.y };
+  box.x1 = Math.min(box.x1, p.x); box.y1 = Math.min(box.y1, p.y);
+  box.x2 = Math.max(box.x2, p.x); box.y2 = Math.max(box.y2, p.y);
+}
+cv.addEventListener('pointerdown', e => { e.preventDefault(); cv.setPointerCapture(e.pointerId);
+  drawing = true; const p = at(e); cx.beginPath(); cx.moveTo(p.x, p.y); cx.lineTo(p.x + 0.1, p.y); cx.stroke();
+  mark(p); inked = true; $('#padbox').classList.add('inked'); say(''); });
+cv.addEventListener('pointermove', e => { if(!drawing) return; e.preventDefault();
+  const p = at(e); cx.lineTo(p.x, p.y); cx.stroke(); mark(p); });
+['pointerup','pointercancel','pointerleave'].forEach(k => cv.addEventListener(k, () => { if(drawing){ drawing = false; paint(); } }));
+$('#clear').onclick = () => { cx.clearRect(0, 0, cv.width, cv.height); inked = false; box = null;
+  $('#padbox').classList.remove('inked'); paint(); say(''); };
+window.addEventListener('resize', fit);
+function signature(){
+  if(!inked || !box) return '';
+  const pad = 8, r = cv.getBoundingClientRect();
+  const x = Math.max(0, box.x1 - pad), y = Math.max(0, box.y1 - pad);
+  const w = Math.min(r.width - x, (box.x2 - box.x1) + pad * 2);
+  const h = Math.min(r.height - y, (box.y2 - box.y1) + pad * 2);
+  const out = document.createElement('canvas');
+  out.width = Math.max(1, Math.round(w * DPR)); out.height = Math.max(1, Math.round(h * DPR));
+  out.getContext('2d').drawImage(cv, Math.round(x * DPR), Math.round(y * DPR), out.width, out.height, 0, 0, out.width, out.height);
+  return out.toDataURL('image/png');
+}
+function b64(buf){ let s = '', u = new Uint8Array(buf); for(let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); }
+
+/* ---------- company: stamped in the browser, the function never sees the field ---------- */
+async function withCompany(){
+  const cf = FIELDS.filter(f => f.kind === 'company'), txt = $('#company').value.trim();
+  if(!cf.length || !txt) return BUF;
+  if(!window.PDFLib){ await new Promise((ok, no) => { const s = document.createElement('script'); s.src = 'pdf-lib.min.js'; s.onload = ok; s.onerror = () => no(new Error('Could not load the PDF tools. Reload and try again.')); document.head.appendChild(s); }); }
+  const { PDFDocument, StandardFonts, rgb } = PDFLib;
+  const pdf = await PDFDocument.load(BUF.slice(0), { ignoreEncryption: true });
+  const font = await pdf.embedFont(StandardFonts.Helvetica), pages = pdf.getPages();
+  for(const f of cf){
+    const pg = pages[f.page - 1]; if(!pg) continue;
+    const { width: W, height: H } = pg.getSize();
+    const w = f.w * W, h = f.h * H;
+    let size = Math.min(h * 0.72, 11); while(size > 5 && font.widthOfTextAtSize(txt, size) > w - 4) size -= 0.25;
+    pg.drawText(txt, { x: f.x * W + 2, y: H - (f.y + f.h) * H + (h - size) / 2 + size * 0.22, size, font, color: rgb(0, 0, 0) });
+  }
+  return (await pdf.save()).buffer;
+}
+
+/* ---------- send ---------- */
+$('#sign').onclick = async () => {
+  if(!FIELDS.some(f => f.kind === 'sig')) return say('Tap the page where your signature goes.', true);
+  if(!$('#name').value.trim()) return say('Type your full name.', true);
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($('#email').value.trim())) return say('Where should the signed copy go?', true);
+  if(!inked) return say('Sign in the box.', true);
+  if(FIELDS.some(f => f.kind === 'company') && !$('#company').value.trim()) return say('Type the company name.', true);
+  if(!$('#consent').checked) return say('Tick the box, that is the part that counts.', true);
+  if(BUF.byteLength > 12 * 1024 * 1024) return say('That PDF is over 12MB. Compress it first.', true);
+  const b = $('#sign'); b.disabled = true; b.textContent = 'Signing';
+  try{
+    const doc = await withCompany();
+    const r = await fetch(API + '/whtbx-sign', { method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ token: TOKEN, pdf: b64(doc), filename: FILE, name: $('#name').value.trim(), title: $('#title2').value.trim(),
+        email: $('#email').value.trim(), consent: true, sig: signature(),
+        fields: FIELDS.filter(f => f.kind !== 'company').map(f => ({ page: f.page, kind: f.kind, x: f.x, y: f.y, w: f.w, h: f.h })) }) });
+    const d = await r.json().catch(() => ({ ok: false, error: 'no answer from the server' }));
+    if(!d.ok) throw new Error(d.error || 'That did not go through.');
+    $('#work').style.display = 'none';
+    $('#h1').textContent = 'Signed.'; $('#sub').textContent = 'Your copy is on its way.';
+    $('#dnote').textContent = 'Emailed to ' + $('#email').value.trim() + (d.also ? ' and ' + d.also : '') + '. Signature ID WHTBX ' + (d.sig_id || '') + '. Anyone can verify it at whtbx.com/verify.html?id=' + (d.sig_id || '') + '. The document was not stored.';
+    if(d.pdf){ const bin = atob(d.pdf), u = new Uint8Array(bin.length); for(let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+      const url = URL.createObjectURL(new Blob([u], { type: 'application/pdf' }));
+      $('#dlink').href = url; $('#dlink').download = FILE.replace(/\.pdf$/i, '') + ' signed.pdf'; }
+    else $('#dlink').style.display = 'none';
+    step(3); $('#done').style.display = ''; window.scrollTo({ top: 0, behavior: 'smooth' });
+  }catch(e){ b.disabled = false; b.textContent = 'Sign and send'; say(e.message, true); }
+};
+</script>
+</body>
+</html>
